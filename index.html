@@ -149,7 +149,7 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
 .cel-sub { font-size:14px; color:var(--muted); margin-top:6px; line-height:1.5; }
 
 /* RECIPES PAGE */
-#recipes-page { padding:calc(var(--safe-top)+24px) 20px calc(var(--safe-bot)+80px); max-width:480px; margin:0 auto; }
+#recipes-page { padding:calc(var(--safe-top)+24px) 20px calc(var(--safe-bot)+80px); max-width:480px; margin:0 auto; } #recipes-page > * { padding-left:4px; padding-right:4px; }
 .home-header h1 { font-size:28px; font-weight:800; letter-spacing:-.5px; margin-bottom:4px; }
 .week-plan { background:var(--surface); border-radius:20px; border:1.5px solid var(--border); box-shadow:var(--shadow); margin:16px 0 20px; overflow:hidden; }
 .week-plan-head { display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px; }
@@ -258,6 +258,7 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
 .tab.active { color:var(--pink); }
 .tab-ico { font-size:22px; line-height:1.2; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -400,6 +401,7 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
 
 <!-- ░░ RECIPES PAGE ░░ -->
 <div id="recipes-page" class="page">
+  <div style="padding:0 20px;">
   <div class="home-header">
     <h1>Tessa's Recipes 🍳</h1>
   </div>
@@ -437,6 +439,7 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
   </div>
   <div class="filter-row" id="filter-row"></div>
   <div class="recipe-grid" id="recipe-grid"></div>
+  </div>
 </div>
 
 <!-- ░░ DETAIL PAGE ░░ -->
@@ -452,7 +455,7 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
 
 <!-- ░░ SHOP PAGE ░░ -->
 <div id="shop-page" class="page">
-  <div>
+  <div style="padding:0 20px;">
     <h1 style="font-size:24px;font-weight:800;padding-top:calc(var(--safe-top)+8px)">Shop Smart 🛒</h1>
     <p class="shop-intro">Buy these <strong>8 hero ingredients</strong> and you can make almost everything in this book. Less waste, less money, more meals.</p>
     <div id="shop-list"></div>
@@ -484,7 +487,27 @@ function getState() {
   try { const d=localStorage.getItem(KEY); if(d) return JSON.parse(d); } catch(e){}
   return { meds:{}, fitstop:{}, girlie:{}, meals:{}, homeChecks:{}, rotChecks:{}, todos:[], content:{}, morningFlow:{}, qi:0 };
 }
-function save() { localStorage.setItem(KEY, JSON.stringify(S)); }
+// Supabase client
+const _sb = supabase.createClient(
+  'https://nwbkttphqlrzrtihxuod.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53Ymt0dHBocWxyenJ0aWh4dW9kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NTUyNTcsImV4cCI6MjA5NzUzMTI1N30.x5H3mURHve2BCde9Ik7EL8YxqbmjmQGSFkBNjqkpDa0'
+);
+
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(S));
+  // Sync to Supabase in background
+  const today = new Date().toISOString().slice(0,10);
+  _sb.from('daily_state').upsert({
+    date: today,
+    meds_done: !!(S.meds && S.meds[today]),
+    morning_flow: S.morningFlow && S.morningFlow[today] ? S.morningFlow[today] : [],
+    fitstop_done: !!(S.fitstop && Object.values(S.fitstop).some(Boolean)),
+    meals_done: S.meals && S.meals[today] ? Object.values(S.meals[today]).filter(Boolean).length : 0,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'date' }).then(({ error }) => {
+    if (error) console.warn('Supabase sync:', error.message);
+  });
+}
 function uid()  { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
 function td()   { return new Date().toISOString().slice(0,10); }
 function weekKey() {
