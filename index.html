@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tessa's App</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="My App">
+<meta name="theme-color" content="#fff8fc">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:#fff8fc; --surface:#ffffff; --surface2:#fef2f8;
+  --border:rgba(220,170,210,0.2); --shadow:0 2px 18px rgba(220,140,200,0.09); --shadow-sm:0 1px 8px rgba(220,140,200,0.07);
+  --text:#3b1f38; --muted:#b094ae;
+  --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
+  --pink:#f472b6; --pink-bg:#fff0f7; --pink-dim:rgba(244,114,182,0.12);
+  --green:#52c987; --green-bg:#f0fdf6; --green-dim:rgba(82,201,135,0.12);
+  --yellow:#f59e0b; --yel:#f59e0b; --yel-bg:#fffbeb; --yel-dim:rgba(245,158,11,0.12);
+  --lilac:#c084fc; --lil:#c084fc; --lil-bg:#fdf4ff; --lil-dim:rgba(192,132,252,0.12);
+  --peach:#fb923c; --pch-bg:#fff7ed; --pch-dim:rgba(251,146,60,0.12); --peach-bg:#fff7ed;
+  --blue:#60a5fa; --blue-bg:#eff6ff;
+}
+html,body { min-height:100%; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; overflow-x:hidden; }
+.page { display:none; min-height:100dvh; }
+.page.active { display:block; }
+
+/* TODAY PAGE */
+#today-page { padding:0; }
+#today-inner { padding:calc(var(--safe-top) + 28px) 18px calc(var(--safe-bot) + 80px); max-width:480px; margin:0 auto; }
+.hdate { font-size:12px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); }
+.htitle { font-size:30px; font-weight:800; letter-spacing:-.5px; margin-top:4px; }
+.quote { background:linear-gradient(135deg,#fff0f9,#fff9e8); border:1.5px solid rgba(244,114,182,.18); border-radius:20px; padding:18px 20px; margin:18px 0; cursor:pointer; box-shadow:var(--shadow-sm); position:relative; overflow:hidden; }
+.quote::before { content:'"'; position:absolute; top:-8px; left:12px; font-size:72px; color:rgba(244,114,182,.13); font-family:Georgia,serif; line-height:1; }
+.quote-text { font-size:14px; font-style:italic; line-height:1.65; color:#7c4a6e; font-weight:500; position:relative; z-index:1; }
+.quote-hint { font-size:11px; color:var(--muted); margin-top:7px; }
+.week-strip { display:flex; gap:5px; margin-bottom:24px; }
+.wd { flex:1; text-align:center; background:var(--surface); border-radius:14px; padding:9px 3px; border:1.5px solid var(--border); box-shadow:var(--shadow-sm); }
+.wd.today { border-color:var(--pink); background:var(--pink-bg); }
+.wd-lbl { font-size:10px; font-weight:800; color:var(--muted); letter-spacing:.4px; }
+.wd-pip { font-size:12px; margin-top:5px; min-height:16px; line-height:1.2; }
+.section { margin-bottom:22px; }
+.sec-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.sec-title { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:800; letter-spacing:.7px; text-transform:uppercase; color:var(--muted); }
+.sec-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.sec-prog { font-size:12px; color:var(--muted); font-weight:600; }
+.card { background:var(--surface); border-radius:20px; border:1.5px solid var(--border); box-shadow:var(--shadow); overflow:hidden; }
+.card-pad { padding:16px 18px; }
+.stars-row { display:flex; gap:10px; justify-content:center; margin-bottom:16px; }
+.star-g { font-size:42px; line-height:1; display:block; transition:all .3s cubic-bezier(.34,1.56,.64,1); }
+.star-g.off { opacity:.16; filter:grayscale(1); }
+@keyframes starPop { 0%{transform:scale(.4) rotate(-15deg)} 60%{transform:scale(1.3) rotate(8deg)} 100%{transform:scale(1) rotate(0)} }
+.star-g.pop { animation:starPop .4s cubic-bezier(.34,1.56,.64,1); }
+.wk-days { display:flex; gap:5px; }
+.wkd { flex:1; text-align:center; background:var(--surface2); border:1.5px solid var(--border); border-radius:13px; padding:9px 3px; cursor:pointer; transition:all .2s; user-select:none; }
+.wkd.done-pink { background:var(--pink-bg); border-color:var(--pink); }
+.wkd.done-lilac { background:var(--lil-bg); border-color:var(--lilac); }
+.wkd.today-ring { box-shadow:0 0 0 2px var(--pink); }
+.wkd.future { opacity:.38; pointer-events:none; }
+.wkd-lbl { font-size:10px; font-weight:800; color:var(--muted); letter-spacing:.4px; }
+.wkd-val { font-size:16px; margin-top:5px; }
+.pbar-wrap { background:var(--surface2); border-radius:999px; height:5px; margin-top:14px; overflow:hidden; }
+.pbar-fill { height:100%; border-radius:999px; transition:width .5s ease; }
+.row { display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .12s; user-select:none; -webkit-user-select:none; }
+.row:last-child { border-bottom:none; }
+.row:active { background:#fdf6fb; }
+.rcheck { width:24px; height:24px; border-radius:50%; border:2px solid rgba(200,160,195,.4); display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; transition:all .2s; color:white; }
+.rcheck-sq { border-radius:8px !important; }
+.row.done .rname { color:var(--muted); text-decoration:line-through; }
+.done-green .rcheck { background:var(--green); border-color:var(--green); }
+.done-yellow .rcheck { background:var(--yellow); border-color:var(--yellow); }
+.done-lilac .rcheck { background:var(--lilac); border-color:var(--lilac); }
+.rico { font-size:20px; flex-shrink:0; }
+.rname { font-size:15px; font-weight:500; flex:1; }
+.rtag { font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; flex-shrink:0; }
+.del-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:18px; padding:0 2px; opacity:0; transition:opacity .15s; line-height:1; flex-shrink:0; }
+.row:hover .del-btn { opacity:.7; }
+.add-row { display:flex; align-items:center; gap:10px; padding:12px 18px; border-top:1px solid var(--border); }
+.add-input { flex:1; background:transparent; border:none; outline:none; font-size:14px; color:var(--text); font-family:inherit; }
+.add-input::placeholder { color:var(--muted); }
+.add-btn { background:none; border:none; font-size:24px; cursor:pointer; color:var(--muted); padding:0; line-height:1; transition:color .15s,transform .15s; }
+.add-btn:active { color:var(--pink); transform:scale(.82); }
+.meal-ideas-btn { display:block; width:calc(100% - 36px); margin:0 18px 14px; background:var(--green-bg); border:1.5px solid rgba(82,201,135,.3); color:var(--green); border-radius:12px; padding:9px 14px; font-size:13px; font-weight:700; cursor:pointer; text-align:left; font-family:inherit; transition:background .15s; }
+.meal-ideas-btn:active { background:var(--green-dim); }
+.rotate-banner { background:var(--yel-bg); border-top:1px solid var(--border); padding:14px 18px; display:flex; align-items:center; gap:12px; cursor:pointer; }
+.rotate-label { flex:1; }
+.rotate-title { font-size:14px; font-weight:700; }
+.rotate-sub { font-size:12px; color:var(--muted); margin-top:2px; }
+.rotate-check { width:30px; height:30px; border-radius:9px; flex-shrink:0; background:var(--yel-dim); border:2px solid rgba(245,158,11,.35); display:flex; align-items:center; justify-content:center; font-size:14px; transition:all .2s; }
+.rotate-done .rotate-check { background:var(--yellow); border-color:var(--yellow); color:white; }
+.content-inner { padding:18px 20px; text-align:center; }
+.content-ttl { font-size:15px; font-weight:700; margin-bottom:6px; }
+.content-sub { font-size:13px; color:var(--muted); line-height:1.6; }
+.content-btn { display:inline-block; margin-top:14px; background:var(--lil-bg); border:1.5px solid rgba(192,132,252,.3); color:var(--lilac); border-radius:14px; padding:10px 22px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+.content-done { font-size:14px; color:var(--lilac); font-weight:700; margin-top:12px; }
+.footnote { text-align:center; font-size:11px; color:var(--muted); margin-top:28px; line-height:1.9; }
+
+/* MORNING FLOW */
+.morning-card { background:linear-gradient(135deg,#fff9e8,#fff0f9); border:1.5px solid rgba(245,158,11,.2); border-radius:20px; padding:16px 18px; margin-bottom:22px; box-shadow:var(--shadow-sm); }
+.morning-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.morning-title { font-size:12px; font-weight:800; letter-spacing:.7px; text-transform:uppercase; color:var(--muted); }
+.morning-date { font-size:12px; color:var(--muted); font-weight:600; }
+.morning-alert { background:var(--pink-dim); border:1.5px solid rgba(244,114,182,.25); border-radius:12px; padding:10px 14px; margin-bottom:10px; font-size:13px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:8px; }
+.morning-step { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(220,170,210,.15); cursor:pointer; user-select:none; -webkit-user-select:none; transition:opacity .15s; }
+.morning-step:last-child { border-bottom:none; }
+.morning-step.mf-done { opacity:.5; }
+.morning-step.mf-done .morning-step-text { color:var(--muted); text-decoration:line-through; }
+.morning-step-ico { font-size:18px; width:24px; text-align:center; flex-shrink:0; }
+.morning-step-text { font-size:14px; flex:1; line-height:1.3; }
+.morning-step-time { font-size:11px; font-weight:800; color:var(--muted); background:rgba(180,160,200,.12); padding:2px 8px; border-radius:20px; white-space:nowrap; }
+.mf-check { width:22px; height:22px; border-radius:50%; flex-shrink:0; border:2px solid rgba(200,160,195,.35); display:flex; align-items:center; justify-content:center; font-size:11px; color:white; transition:all .2s; }
+.mf-check-done { background:var(--green); border-color:var(--green); }
+
+/* MEDS */
+.meds-card { background:linear-gradient(135deg,#fff0f9,#f5f3ff); border:2px solid rgba(244,114,182,0.25); border-radius:20px; padding:16px 18px; display:flex; align-items:center; gap:14px; cursor:pointer; box-shadow:var(--shadow-sm); transition:all .2s; user-select:none; -webkit-user-select:none; margin-bottom:22px; }
+.meds-card:active { opacity:.85; }
+.meds-card.done { background:linear-gradient(135deg,#f0fdf6,#f5f3ff); border-color:rgba(82,201,135,0.4); }
+.meds-ico { font-size:36px; flex-shrink:0; }
+.meds-body { flex:1; }
+.meds-title { font-size:16px; font-weight:800; color:var(--text); }
+.meds-sub { font-size:12px; color:var(--muted); margin-top:2px; }
+.meds-check { width:36px; height:36px; border-radius:50%; flex-shrink:0; border:2.5px solid rgba(200,160,195,.4); display:flex; align-items:center; justify-content:center; font-size:16px; color:white; transition:all .25s; background:transparent; }
+.meds-card.done .meds-check { background:var(--green); border-color:var(--green); }
+
+/* SHEET / OVERLAY */
+.overlay { position:fixed; inset:0; background:rgba(80,20,65,.3); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); z-index:300; display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .25s; }
+.overlay.open { opacity:1; pointer-events:all; }
+.sheet { width:100%; background:var(--surface); border-radius:28px 28px 0 0; padding:18px 20px calc(24px + var(--safe-bot)); transform:translateY(110%); transition:transform .38s cubic-bezier(.32,.72,0,1); max-height:88dvh; overflow-y:auto; box-shadow:0 -6px 40px rgba(200,100,180,.12); }
+.overlay.open .sheet { transform:translateY(0); }
+.sh-handle { width:36px; height:4px; background:rgba(200,170,210,.45); border-radius:2px; margin:0 auto 20px; }
+.sh-title { font-size:18px; font-weight:800; color:var(--text); margin-bottom:16px; }
+.sh-btn { width:100%; padding:14px; border-radius:16px; border:none; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit; transition:opacity .15s; margin-top:8px; }
+.sh-btn:active { opacity:.8; }
+.btn-ghost { background:var(--surface2); color:var(--muted); }
+.activity-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+.act-btn { display:flex; flex-direction:column; align-items:center; gap:7px; background:var(--surface2); border:1.5px solid var(--border); border-radius:18px; padding:18px 8px; cursor:pointer; transition:all .2s; }
+.act-btn:active { transform:scale(.93); }
+.act-ico { font-size:32px; line-height:1; }
+.act-lbl { font-size:12px; font-weight:700; color:var(--muted); }
+.cel { position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center; background:rgba(100,20,75,.28); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); opacity:0; pointer-events:none; transition:opacity .25s; }
+.cel.show { opacity:1; pointer-events:all; }
+.cel-inner { background:white; border-radius:28px; padding:32px 40px; text-align:center; box-shadow:0 8px 48px rgba(200,100,180,.2); transform:scale(.75); transition:transform .4s cubic-bezier(.34,1.56,.64,1); border:2px solid rgba(244,114,182,.18); max-width:300px; }
+.cel.show .cel-inner { transform:scale(1); }
+.cel-ico { font-size:56px; display:block; }
+.cel-msg { font-size:20px; font-weight:800; color:var(--text); margin-top:10px; }
+.cel-sub { font-size:14px; color:var(--muted); margin-top:6px; line-height:1.5; }
+
+/* RECIPES PAGE */
+#recipes-page { padding:calc(var(--safe-top)+24px) 16px calc(var(--safe-bot)+80px); }
+.home-header h1 { font-size:28px; font-weight:800; letter-spacing:-.5px; }
+.week-plan { background:var(--surface); border-radius:20px; border:1.5px solid var(--border); box-shadow:var(--shadow); margin:16px 0; overflow:hidden; }
+.week-plan-head { display:flex; align-items:center; justify-content:space-between; padding:14px 16px 10px; }
+.week-plan-head h2 { font-size:16px; font-weight:800; }
+.week-plan-head span { font-size:11px; color:var(--muted); font-weight:600; }
+.meal-slot { display:flex; align-items:center; gap:12px; padding:11px 16px; border-top:1px solid var(--border); cursor:pointer; transition:background .15s; }
+.meal-slot:active { background:var(--surface2); }
+.meal-slot-label { font-size:10px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; width:58px; flex-shrink:0; }
+.meal-slot-content { flex:1; }
+.meal-slot-name { font-size:13px; font-weight:700; }
+.meal-slot-sub { font-size:11px; color:var(--muted); margin-top:1px; }
+.meal-slot-ico { font-size:24px; }
+.cal-banner { display:flex; align-items:center; gap:8px; padding:8px 12px; margin-bottom:12px; background:var(--surface2); border-radius:12px; border:1px solid var(--border); }
+.cal-banner-text { flex:1; font-size:11px; color:var(--muted); }
+.cal-banner-text strong { font-weight:800; color:var(--text); }
+.heart-btn { position:absolute; top:8px; left:8px; background:rgba(255,255,255,.85); backdrop-filter:blur(4px); border:none; border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; transition:transform .15s; z-index:5; }
+.heart-btn:active { transform:scale(1.25); }
+.detail-heart-btn { background:var(--surface); border:1.5px solid var(--border); border-radius:50px; padding:8px 18px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; margin:0 auto; font-family:inherit; color:var(--text); transition:all .15s; }
+.detail-heart-btn.active { background:var(--pink-bg); border-color:var(--pink); color:var(--pink); }
+.shop-list-card { background:var(--surface); border-radius:20px; border:1.5px solid var(--border); box-shadow:var(--shadow); margin-bottom:16px; overflow:hidden; display:none; }
+.shop-list-card.visible { display:block; }
+.shop-list-head { display:flex; align-items:center; justify-content:space-between; padding:14px 16px 12px; border-bottom:1px solid var(--border); }
+.shop-list-head h2 { font-size:16px; font-weight:800; }
+.shop-copy-btn { background:var(--pink); color:white; border:none; border-radius:20px; padding:6px 14px; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit; transition:opacity .15s; }
+.shop-copy-btn:active { opacity:.7; }
+.shop-copy-btn.done { background:var(--green); }
+.shop-ing-row { display:flex; align-items:baseline; gap:10px; padding:10px 16px; border-bottom:1px solid var(--border); }
+.shop-ing-row:last-child { border-bottom:none; }
+.shop-ing-qty { font-size:12px; font-weight:800; color:var(--pink); min-width:54px; flex-shrink:0; }
+.shop-ing-name { font-size:14px; font-weight:600; flex:1; }
+.shop-ing-from { font-size:11px; color:var(--muted); margin-top:2px; }
+.shop-meal-label { padding:8px 16px 4px; font-size:10px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); background:var(--surface2); }
+#plan-sheet { position:fixed; inset:0; z-index:500; display:none; }
+#plan-sheet.open { display:flex; flex-direction:column; justify-content:flex-end; }
+.plan-sheet-bg { position:absolute; inset:0; background:rgba(0,0,0,.35); }
+.plan-sheet-card { position:relative; background:var(--bg); border-radius:24px 24px 0 0; padding:0 0 calc(var(--safe-bot)+16px); max-height:80dvh; overflow-y:auto; animation:slideUp .28s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.plan-sheet-head { display:flex; align-items:center; justify-content:space-between; padding:18px 18px 12px; position:sticky; top:0; background:var(--bg); border-bottom:1px solid var(--border); }
+.plan-sheet-head h3 { font-size:17px; font-weight:800; }
+.plan-sheet-close { background:var(--surface2); border:none; border-radius:50%; width:30px; height:30px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; }
+.plan-pick-item { display:flex; align-items:center; gap:12px; padding:13px 18px; border-bottom:1px solid var(--border); cursor:pointer; transition:background .12s; }
+.plan-pick-item:active { background:var(--surface2); }
+.plan-pick-emoji { font-size:28px; flex-shrink:0; }
+.plan-pick-name { font-size:14px; font-weight:700; flex:1; }
+.plan-pick-meta { font-size:11px; color:var(--muted); margin-top:2px; }
+.filter-row { display:flex; gap:6px; margin-bottom:18px; overflow-x:auto; padding-bottom:2px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.filter-row::-webkit-scrollbar { display:none; }
+.ftab { flex-shrink:0; padding:7px 16px; border-radius:20px; background:var(--surface); border:1.5px solid var(--border); font-size:13px; font-weight:700; color:var(--muted); cursor:pointer; font-family:inherit; transition:all .2s; white-space:nowrap; }
+.ftab.active { background:var(--pink); border-color:var(--pink); color:white; }
+.recipe-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.rcard { background:var(--surface); border-radius:20px; border:1.5px solid var(--border); box-shadow:var(--shadow); overflow:hidden; cursor:pointer; transition:transform .15s,box-shadow .15s; }
+.rcard:active { transform:scale(.97); box-shadow:none; }
+.rcard-top { padding:20px 16px 12px; text-align:center; font-size:44px; position:relative; }
+.viral-badge { position:absolute; top:10px; right:10px; background:var(--pink); color:white; font-size:9px; font-weight:800; letter-spacing:.4px; padding:2px 6px; border-radius:20px; }
+.prep-badge { position:absolute; top:10px; right:10px; background:var(--lil); color:white; font-size:9px; font-weight:800; letter-spacing:.4px; padding:2px 6px; border-radius:20px; }
+.rcard-body { padding:0 14px 14px; }
+.rcard-name { font-size:13px; font-weight:800; line-height:1.3; }
+.rcard-cat { font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; margin-top:3px; }
+.rcard-macros { display:flex; gap:6px; margin-top:10px; }
+.mac { flex:1; text-align:center; border-radius:8px; padding:5px 2px; }
+.mac-n { font-size:12px; font-weight:800; }
+.mac-l { font-size:9px; color:var(--muted); font-weight:700; letter-spacing:.3px; }
+.rcard-time { font-size:11px; color:var(--muted); margin-top:8px; font-weight:600; }
+#detail-page { padding:calc(var(--safe-top)+16px) 0 calc(var(--safe-bot)+80px); }
+.detail-hero { padding:28px 20px 20px; text-align:center; background:linear-gradient(180deg,var(--pink-bg),var(--bg)); }
+.detail-emoji { font-size:72px; display:block; }
+.detail-name { font-size:24px; font-weight:800; letter-spacing:-.3px; margin-top:10px; }
+.detail-viral { font-size:12px; color:var(--pink); font-weight:700; margin-top:4px; }
+.detail-time { font-size:13px; color:var(--muted); margin-top:4px; }
+.macro-row { display:flex; gap:8px; padding:16px; }
+.mac-card { flex:1; text-align:center; border-radius:14px; padding:12px 6px; }
+.mac-card-n { font-size:20px; font-weight:800; }
+.mac-card-l { font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--muted); margin-top:2px; }
+.detail-section { padding:0 18px; margin-bottom:24px; }
+.detail-section-title { font-size:12px; font-weight:800; letter-spacing:.7px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; margin-top:20px; display:flex; align-items:center; gap:8px; }
+.detail-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.ing-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+.ing-item:last-child { border-bottom:none; }
+.ing-qty { font-size:13px; font-weight:800; color:var(--pink); min-width:52px; flex-shrink:0; }
+.ing-body { flex:1; }
+.ing-name { font-size:14px; font-weight:600; }
+.ing-brand { font-size:11px; color:var(--muted); margin-top:1px; }
+.step-item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+.step-item:last-child { border-bottom:none; }
+.step-n { width:26px; height:26px; border-radius:50%; background:var(--pink-bg); color:var(--pink); font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+.step-text { font-size:14px; line-height:1.55; flex:1; }
+.also-row { display:flex; gap:8px; flex-wrap:wrap; }
+.also-chip { display:flex; align-items:center; gap:6px; background:var(--surface2); border:1.5px solid var(--border); border-radius:20px; padding:6px 12px; cursor:pointer; font-size:13px; font-weight:600; transition:background .15s; }
+.also-chip:active { background:var(--pink-bg); }
+.tip-box { background:var(--yel-bg); border:1.5px solid rgba(245,158,11,.25); border-radius:14px; padding:12px 14px; font-size:13px; line-height:1.55; color:#7c5a0a; }
+.tip-box strong { display:block; font-size:12px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:var(--yel); margin-bottom:4px; }
+#shop-page { padding:calc(var(--safe-top)+24px) 16px calc(var(--safe-bot)+80px); }
+.shop-intro { font-size:14px; color:var(--muted); line-height:1.6; margin:12px 0 20px; }
+.ing-group { background:var(--surface); border-radius:18px; border:1.5px solid var(--border); box-shadow:var(--shadow); margin-bottom:12px; overflow:hidden; }
+.ing-group-head { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); }
+.ing-group-ico { font-size:28px; }
+.ing-group-name { font-size:15px; font-weight:800; }
+.ing-group-sub { font-size:12px; color:var(--muted); margin-top:1px; }
+.ing-group-tag { margin-left:auto; font-size:10px; font-weight:800; padding:3px 9px; border-radius:20px; }
+.ing-uses { display:flex; flex-wrap:wrap; gap:6px; padding:12px 16px; }
+.use-chip { font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; cursor:pointer; transition:opacity .15s; }
+.use-chip:active { opacity:.7; }
+.back-btn { background:none; border:none; color:var(--pink); font-size:15px; font-weight:700; cursor:pointer; padding:16px 18px 0; display:flex; align-items:center; gap:5px; font-family:inherit; }
+#tab-bar { position:fixed; bottom:0; left:0; right:0; height:calc(64px + var(--safe-bot)); padding-bottom:var(--safe-bot); background:rgba(255,248,252,.96); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; align-items:center; z-index:200; }
+.tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; color:var(--muted); font-size:10px; font-weight:700; letter-spacing:.3px; cursor:pointer; padding:8px 0; transition:color .2s; font-family:inherit; }
+.tab.active { color:var(--pink); }
+.tab-ico { font-size:22px; line-height:1.2; }
+</style>
+</head>
+<body>
+
+<!-- PLAN PICKER SHEET -->
+<div id="plan-sheet">
+  <div class="plan-sheet-bg" onclick="closePlanSheet()"></div>
+  <div class="plan-sheet-card">
+    <div class="plan-sheet-head">
+      <h3 id="plan-sheet-title">Pick a recipe</h3>
+      <button class="plan-sheet-close" onclick="closePlanSheet()">✕</button>
+    </div>
+    <div id="plan-sheet-list"></div>
+  </div>
+</div>
+
+<!-- GIRLIE OVERLAY -->
+<div class="overlay" id="girl-overlay" onclick="sheetBgClose(event,'girl-overlay')">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">Where did you go? 🎀</div>
+    <div class="activity-grid" id="act-grid"></div>
+    <button class="sh-btn btn-ghost" onclick="closeSheet('girl-overlay')">Cancel</button>
+  </div>
+</div>
+
+<!-- CELEBRATION -->
+<div class="cel" id="cel" onclick="hideCel()">
+  <div class="cel-inner">
+    <span class="cel-ico" id="cel-ico"></span>
+    <div class="cel-msg" id="cel-msg"></div>
+    <div class="cel-sub" id="cel-sub"></div>
+  </div>
+</div>
+
+<!-- ░░ TODAY PAGE ░░ -->
+<div id="today-page" class="page active">
+  <div id="today-inner">
+    <div class="hdate" id="hdate"></div>
+    <div class="htitle" id="htitle">Hey Tessa 🌸</div>
+
+    <div class="quote" onclick="nextQuote()">
+      <div class="quote-text" id="qtext"></div>
+      <div class="quote-hint">tap for a new one ✨</div>
+    </div>
+
+    <div class="week-strip" id="wstrip"></div>
+
+    <div id="morning-section"></div>
+    <div id="meds-section"></div>
+
+    <!-- FITSTOP -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title"><div class="sec-dot" style="background:var(--pink)"></div>Fitstop</div>
+        <div class="sec-prog" id="fit-prog"></div>
+      </div>
+      <div class="card card-pad">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.4">3 sessions this week = all 3 stars 💪 Tap the day you went.</div>
+        <div class="stars-row" id="fit-stars"></div>
+        <div class="wk-days" id="fit-days"></div>
+        <div class="pbar-wrap"><div class="pbar-fill" id="fit-bar" style="background:linear-gradient(90deg,var(--pink),#fb923c)"></div></div>
+      </div>
+    </div>
+
+    <!-- GIRLIE -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title"><div class="sec-dot" style="background:var(--lilac)"></div>Girlie time</div>
+        <div class="sec-prog" id="girl-prog"></div>
+      </div>
+      <div class="card card-pad">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.4">Take her out at least twice this week 🎀 Tap a day to log where you went.</div>
+        <div class="stars-row" id="girl-stars"></div>
+        <div class="wk-days" id="girl-days"></div>
+        <div class="pbar-wrap"><div class="pbar-fill" id="girl-bar" style="background:linear-gradient(90deg,var(--lilac),#818cf8)"></div></div>
+      </div>
+    </div>
+
+    <!-- NOURISH -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title"><div class="sec-dot" style="background:var(--green)"></div>Nourish</div>
+        <div class="sec-prog" id="meal-prog"></div>
+      </div>
+      <div class="card">
+        <button class="meal-ideas-btn" onclick="navToTab('recipes')" style="margin-top:14px">🍳 Open recipe book →</button>
+        <div id="meals-card"></div>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title"><div class="sec-dot" style="background:var(--yellow)"></div>Home</div>
+        <div class="sec-prog" id="home-prog"></div>
+      </div>
+      <div class="card" id="home-card"></div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title"><div class="sec-dot" style="background:var(--peach)"></div>Tasks</div>
+        <div class="sec-prog" id="todo-prog"></div>
+      </div>
+      <div class="card" id="todo-card"></div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="section">
+      <div class="sec-head">
+        <div class="sec-title"><div class="sec-dot" style="background:#cbd5e1"></div>Content</div>
+      </div>
+      <div class="card">
+        <div class="content-inner">
+          <div class="content-ttl">🎬 When you're ready</div>
+          <div class="content-sub">Content is the bonus — not the baseline. Everything else comes first.</div>
+          <div id="content-area"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footnote">Fitstop + Girlie reset Monday · Meals &amp; home reset daily<br>Tasks stay until you clear them 💜</div>
+  </div>
+</div>
+
+<!-- ░░ RECIPES PAGE ░░ -->
+<div id="recipes-page" class="page">
+  <div class="home-header">
+    <h1>Tessa's Recipes 🍳</h1>
+  </div>
+  <div class="week-plan" id="week-plan">
+    <div class="week-plan-head">
+      <h2>🗓 This week's meals</h2>
+      <span>Tap to choose</span>
+    </div>
+    <div class="meal-slot" onclick="openPlanSheet('breakfast')">
+      <span class="meal-slot-label" style="color:var(--yel)">Breakfast</span>
+      <div class="meal-slot-content" id="slot-breakfast"><div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div></div>
+      <span class="meal-slot-ico" id="slot-breakfast-ico">➕</span>
+    </div>
+    <div class="meal-slot" onclick="openPlanSheet('lunch')">
+      <span class="meal-slot-label" style="color:var(--green)">Lunch</span>
+      <div class="meal-slot-content" id="slot-lunch"><div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div></div>
+      <span class="meal-slot-ico" id="slot-lunch-ico">➕</span>
+    </div>
+    <div class="meal-slot" onclick="openPlanSheet('dinner')">
+      <span class="meal-slot-label" style="color:var(--pink)">Dinner</span>
+      <div class="meal-slot-content" id="slot-dinner"><div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div></div>
+      <span class="meal-slot-ico" id="slot-dinner-ico">➕</span>
+    </div>
+  </div>
+  <div class="shop-list-card" id="week-shop-list">
+    <div class="shop-list-head">
+      <h2>🛒 This week's shopping</h2>
+      <button class="shop-copy-btn" id="shop-copy-btn" onclick="copyShopList()">Copy list</button>
+    </div>
+    <div id="week-shop-items"></div>
+  </div>
+  <div class="cal-banner">
+    <div style="font-size:18px">📊</div>
+    <div class="cal-banner-text"><strong>~1800 cal/day</strong> · 55g+ fat · 130g+ protein · Snack daily</div>
+  </div>
+  <div class="filter-row" id="filter-row"></div>
+  <div class="recipe-grid" id="recipe-grid"></div>
+</div>
+
+<!-- ░░ DETAIL PAGE ░░ -->
+<div id="detail-page" class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding-right:16px">
+    <button class="back-btn" onclick="goBackFromDetail()">← Recipes</button>
+    <button class="detail-heart-btn" id="detail-heart" onclick="toggleDetailHeart()">
+      <span id="detail-heart-ico">🤍</span> Save favourite
+    </button>
+  </div>
+  <div id="detail-content"></div>
+</div>
+
+<!-- ░░ SHOP PAGE ░░ -->
+<div id="shop-page" class="page">
+  <div>
+    <h1 style="font-size:24px;font-weight:800;padding-top:calc(var(--safe-top)+8px)">Shop Smart 🛒</h1>
+    <p class="shop-intro">Buy these <strong>8 hero ingredients</strong> and you can make almost everything in this book. Less waste, less money, more meals.</p>
+    <div id="shop-list"></div>
+  </div>
+</div>
+
+<!-- ░░ TAB BAR ░░ -->
+<nav id="tab-bar">
+  <button class="tab active" data-tab="today" onclick="navToTab('today')">
+    <span class="tab-ico">📋</span><span>Today</span>
+  </button>
+  <button class="tab" data-tab="recipes" onclick="navToTab('recipes')">
+    <span class="tab-ico">🍳</span><span>Recipes</span>
+  </button>
+  <button class="tab" data-tab="shop" onclick="navToTab('shop')">
+    <span class="tab-ico">🛒</span><span>Shop</span>
+  </button>
+</nav>
+
+<script>
+// ═══════════════════════════════════════════════
+//  TRACKER STATE
+// ═══════════════════════════════════════════════
+const KEY = 'tracker_v4';
+let S = getState();
+if (!S.morningFlow) S.morningFlow = {};
+
+function getState() {
+  try { const d=localStorage.getItem(KEY); if(d) return JSON.parse(d); } catch(e){}
+  return { meds:{}, fitstop:{}, girlie:{}, meals:{}, homeChecks:{}, rotChecks:{}, todos:[], content:{}, morningFlow:{}, qi:0 };
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(S)); }
+function uid()  { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+function td()   { return new Date().toISOString().slice(0,10); }
+function weekKey() {
+  const d=new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate()-((d.getDay()+6)%7));
+  return d.toISOString().slice(0,10);
+}
+function weekDays() {
+  const m=new Date(weekKey()+'T00:00:00');
+  return Array.from({length:7},(_,i)=>{ const d=new Date(m); d.setDate(d.getDate()+i); return d.toISOString().slice(0,10); });
+}
+function esc(s) { return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):''; }
+
+// ═══════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════
+let currentPage = 'today';
+let previousPage = 'recipes';
+
+function navToTab(tab) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  currentPage = tab;
+  document.getElementById(tab+'-page').classList.add('active');
+  const tabEl = document.querySelector('[data-tab="'+tab+'"]');
+  if (tabEl) tabEl.classList.add('active');
+  if (tab==='shop') renderShop();
+  if (tab==='recipes') renderGrid();
+  window.scrollTo(0,0);
+}
+
+function openRecipe(id) {
+  const r=RECIPES.find(x=>x.id===id); if(!r) return;
+  if (currentPage !== 'detail') previousPage = currentPage;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('detail-page').classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const rt = document.querySelector('[data-tab="recipes"]');
+  if (rt) rt.classList.add('active');
+  currentPage = 'detail';
+  currentDetailId = id;
+  renderDetail(r);
+  updateDetailHeart(id);
+  window.scrollTo(0,0);
+}
+
+function goBackFromDetail() {
+  document.getElementById('detail-page').classList.remove('active');
+  const ret = previousPage || 'recipes';
+  document.getElementById(ret+'-page').classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const tabEl = document.querySelector('[data-tab="'+ret+'"]');
+  if (tabEl) tabEl.classList.add('active');
+  currentPage = ret;
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════════════
+//  MORNING FLOW WITH CHECKBOXES
+// ═══════════════════════════════════════════════
+function getMorningSteps() {
+  const day = new Date().getDay();
+  const isGymnastics = (day===4||day===5);
+  const steps = [
+    { ico:'☕', text:"Coffee (you're already doing this)", time:'' },
+    { ico:'💊', text:'Take meds', time:'with breakfast' },
+    { ico:'🛏', text:'Make the bed', time:'5 min' },
+    { ico:'🍳', text:'Eat breakfast — high protein', time:'15 min' },
+  ];
+  if (isGymnastics) {
+    steps.push({ ico:'🎒', text:'Get girlie ready — bag packed, shoes on', time:'by 8:15am' });
+    steps.push({ ico:'🤸', text:'Drive to gymnastics', time:'leave 8:30am' });
+  } else {
+    steps.push({ ico:'🧹', text:'Quick lounge + kitchen reset', time:'10 min' });
+    steps.push({ ico:'💪', text:"Fitstop — if today's a session day", time:'9:15am' });
+  }
+  return steps;
+}
+
+function toggleMorningStep(i) {
+  const t=td();
+  const steps=getMorningSteps();
+  if (!S.morningFlow[t]) S.morningFlow[t]=steps.map(()=>false);
+  while (S.morningFlow[t].length<steps.length) S.morningFlow[t].push(false);
+  S.morningFlow[t][i]=!S.morningFlow[t][i];
+  save(); renderMorning();
+  if (S.morningFlow[t].every(Boolean)) celebrate('☀️','Morning flow complete!',"You're set up for a great day 💜");
+}
+
+function renderMorning() {
+  const day=new Date().getDay();
+  const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const isGymnastics=(day===4||day===5);
+  const steps=getMorningSteps();
+  const t=td();
+  const done=S.morningFlow[t]||[];
+  const alertHtml=isGymnastics?`<div class="morning-alert">🤸 Gymnastics at <strong>9:00am</strong> — leave by 8:30am</div>`:'';
+  const doneCount=steps.filter((_,i)=>done[i]).length;
+  const allDone=doneCount===steps.length;
+  document.getElementById('morning-section').innerHTML=`
+    <div class="morning-card">
+      <div class="morning-top">
+        <div class="morning-title">☀️ Morning flow ${allDone?'✓':doneCount>0?doneCount+'/'+steps.length:''}</div>
+        <div class="morning-date">${dayNames[day]}</div>
+      </div>
+      ${alertHtml}
+      ${steps.map((s,i)=>`
+        <div class="morning-step ${done[i]?'mf-done':''}" onclick="toggleMorningStep(${i})">
+          <div class="morning-step-ico">${s.ico}</div>
+          <div class="morning-step-text">${s.text}</div>
+          ${s.time?`<div class="morning-step-time">${s.time}</div>`:''}
+          <div class="mf-check ${done[i]?'mf-check-done':''}">${done[i]?'✓':''}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════
+//  MEDS
+// ═══════════════════════════════════════════════
+function toggleMeds() {
+  const t=td(); S.meds[t]=!S.meds[t]; save(); renderMeds();
+  if(S.meds[t]) celebrate('💊✨','Meds taken!','Body taken care of. Good start to the day 💜');
+}
+function renderMeds() {
+  const done=!!S.meds[td()];
+  document.getElementById('meds-section').innerHTML=`
+    <div class="meds-card ${done?'done':''}" onclick="toggleMeds()">
+      <div class="meds-ico">💊</div>
+      <div class="meds-body">
+        <div class="meds-title">${done?'Meds taken ✓':'Take your meds'}</div>
+        <div class="meds-sub">${done?'Done for today — great start!':'Every morning · tap to confirm'}</div>
+      </div>
+      <div class="meds-check">${done?'✓':''}</div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════
+//  QUOTES
+// ═══════════════════════════════════════════════
+const Q=[
+  "You don't have to do it all. You just have to show up.",
+  "Fitstop three times. Meals three times. Home sorted. That's the whole game.",
+  "Small things done consistently change everything.",
+  "Feeding yourself well is an act of love — do it three times today.",
+  "Every Fitstop session is a gift to future you.",
+  "Taking girlie out counts as showing up for both of you.",
+  "A tidy lounge and a clean kitchen — that's a win.",
+  "Progress, not perfection. Always.",
+  "You're doing better than you think.",
+  "Rest is not laziness. Rest is how you keep going.",
+  "Done is infinitely better than perfect.",
+  "The version of you who just maintains? She's incredible.",
+  "You showed up today. That's the whole job.",
+  "Nourish your body — it's working hard for you.",
+  "Three sessions. Three meals. That's enough. That is genuinely enough.",
+  "Give yourself the grace you'd give your best friend.",
+  "You're not behind. You're exactly where you are, and that's okay.",
+  "Every meal you make for yourself is you choosing yourself.",
+  "One thing at a time. Just one thing.",
+  "Showing up is the hardest part. You're already doing it. 💜"
+];
+function nextQuote() { S.qi=((S.qi||0)+1)%Q.length; save(); document.getElementById('qtext').textContent=Q[S.qi]; }
+
+// ═══════════════════════════════════════════════
+//  FITSTOP
+// ═══════════════════════════════════════════════
+function tapFitstop(date) {
+  if(S.fitstop[date]) { delete S.fitstop[date]; } else { S.fitstop[date]=true; }
+  save(); renderFitstop(); renderWeek();
+  if(S.fitstop[date]) {
+    const count=getFitCount();
+    if(count===3) celebrate('🌟🌟🌟','Three sessions this week!','You absolute powerhouse. All stars earned!');
+    else celebrate('💪','Fitstop logged!',count===2?'One more to go 🔥':'Two more to go — you\'ve got this!');
+  }
+}
+function getFitCount() { return weekDays().filter(d=>S.fitstop[d]).length; }
+function renderFitstop() {
+  const days=weekDays(),count=getFitCount(),today=td();
+  const labels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  document.getElementById('fit-stars').innerHTML=[1,2,3].map(n=>`<div><span class="star-g ${count>=n?'':'off'}">${count>=n?'⭐':'☆'}</span></div>`).join('');
+  document.getElementById('fit-days').innerHTML=days.map((d,i)=>`<div class="wkd ${S.fitstop[d]?'done-pink':''} ${d===today?'today-ring':''} ${d>today?'future':''}" onclick="tapFitstop('${d}')"><div class="wkd-lbl">${labels[i]}</div><div class="wkd-val">${S.fitstop[d]?'💪':'·'}</div></div>`).join('');
+  document.getElementById('fit-bar').style.width=(Math.min(count/3,1)*100)+'%';
+  document.getElementById('fit-prog').textContent=count+'/3 this week';
+}
+
+// ═══════════════════════════════════════════════
+//  GIRLIE TIME
+// ═══════════════════════════════════════════════
+const ACTIVITIES=[
+  {id:'gymnastics',ico:'🤸',lbl:'Gymnastics'},
+  {id:'library',   ico:'📚',lbl:'Library'},
+  {id:'park',      ico:'🌳',lbl:'Park'},
+  {id:'beach',     ico:'🏖️',lbl:'Beach'},
+  {id:'playdate',  ico:'👧',lbl:'Playdate'},
+  {id:'other',     ico:'💛',lbl:'Other outing'},
+];
+let pendingGirlDate=null;
+function tapGirlie(date) {
+  if(S.girlie[date]) { delete S.girlie[date]; save(); renderGirlie(); renderWeek(); }
+  else { pendingGirlDate=date; drawActGrid(); openSheet('girl-overlay'); }
+}
+function pickActivity(id) {
+  if(!pendingGirlDate) return;
+  S.girlie[pendingGirlDate]=id; save(); closeSheet('girl-overlay'); renderGirlie(); renderWeek();
+  const count=getGirlCount(); const act=ACTIVITIES.find(a=>a.id===id);
+  if(count>=2) celebrate('🎀🌟','Two outings this week!','She loved it. You nailed this.');
+  else celebrate(act?act.ico:'💛',act?act.lbl+' day!':'Outing logged!','Quality time with your girl 💜');
+}
+function drawActGrid() {
+  document.getElementById('act-grid').innerHTML=ACTIVITIES.map(a=>`<div class="act-btn" onclick="pickActivity('${a.id}')"><div class="act-ico">${a.ico}</div><div class="act-lbl">${a.lbl}</div></div>`).join('');
+}
+function getGirlCount() { return weekDays().filter(d=>S.girlie[d]).length; }
+function renderGirlie() {
+  const days=weekDays(),count=getGirlCount(),today=td();
+  const labels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  document.getElementById('girl-stars').innerHTML=[1,2].map(n=>`<div><span class="star-g ${count>=n?'':'off'}">${count>=n?'⭐':'☆'}</span></div>`).join('');
+  document.getElementById('girl-days').innerHTML=days.map((d,i)=>{ const act=S.girlie[d]?ACTIVITIES.find(a=>a.id===S.girlie[d]):null; return `<div class="wkd ${S.girlie[d]?'done-lilac':''} ${d===today?'today-ring':''} ${d>today?'future':''}" onclick="tapGirlie('${d}')"><div class="wkd-lbl">${labels[i]}</div><div class="wkd-val">${act?act.ico:S.girlie[d]?'✓':'·'}</div></div>`; }).join('');
+  document.getElementById('girl-bar').style.width=(Math.min(count/2,1)*100)+'%';
+  document.getElementById('girl-prog').textContent=count+'/2 this week';
+}
+
+// ═══════════════════════════════════════════════
+//  MEALS
+// ═══════════════════════════════════════════════
+const MEALS=[
+  {id:'b',ico:'🌸',name:'Breakfast',sub:'High protein · eggs, yoghurt, smoothie'},
+  {id:'l',ico:'☀️',name:'Lunch',    sub:'High protein · chicken, tuna, eggs'},
+  {id:'d',ico:'🌙',name:'Dinner',   sub:'High protein · salmon, chicken, mince'}
+];
+function todayMeals() { const t=td(); if(!S.meals[t]) S.meals[t]={b:false,l:false,d:false}; return S.meals[t]; }
+function toggleMeal(id) {
+  const m=todayMeals(); m[id]=!m[id]; save(); renderMeals();
+  if(m[id]&&Object.values(m).filter(Boolean).length===3) celebrate('🌿','Three meals today!','Your body is fuelled and happy. Well done.');
+}
+function renderMeals() {
+  const m=todayMeals(); const done=Object.values(m).filter(Boolean).length;
+  document.getElementById('meal-prog').textContent=done+'/3 today';
+  document.getElementById('meals-card').innerHTML=MEALS.map(ml=>`<div class="row ${m[ml.id]?'done done-green':''}" onclick="toggleMeal('${ml.id}')"><div class="rcheck">${m[ml.id]?'✓':''}</div><div class="rico">${ml.ico}</div><div style="flex:1"><div class="rname" style="${m[ml.id]?'color:var(--muted);text-decoration:line-through':''}">${ml.name}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${ml.sub}</div></div></div>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  HOME
+// ═══════════════════════════════════════════════
+const DAILY_AREAS=[
+  {id:'lounge', ico:'🛋️',name:'Lounge room'},
+  {id:'kitchen',ico:'🍳',name:'Kitchen'},
+  {id:'bathrm', ico:'🛁',name:"Girlie's bathroom"},
+  {id:'vacuum', ico:'🧹',name:'Vacuum'},
+];
+const ROTATE_BY_DAY=[
+  {ico:'😌',name:'Rest day',sub:'No extra task today — you earned it'},
+  {ico:'🧺',name:'Fold & put away laundry',sub:"That pile won't fold itself — 15 mins max"},
+  {ico:'🫧',name:'Clean bathrooms',sub:'Main bathroom + ensuite — full clean'},
+  {ico:'🧺',name:'Fold & put away laundry',sub:'Keep the pile from building up'},
+  {ico:'🪣',name:'Mop all floors',sub:'Once a week — Thursday is the day'},
+  {ico:'🧺',name:'Fold & put away laundry',sub:'End of week laundry clear-out'},
+  {ico:'🫧',name:'Clean bathrooms',sub:'Weekend reset — bathroom blitz'},
+];
+function getTodayRotateTask() { return ROTATE_BY_DAY[new Date().getDay()]; }
+function todayHome() {
+  const t=td();
+  if(!S.homeChecks[t]) { S.homeChecks[t]={}; DAILY_AREAS.forEach(a=>S.homeChecks[t][a.id]=false); S.homeChecks[t].rotate=false; }
+  return S.homeChecks[t];
+}
+function toggleHomeArea(id) {
+  const h=todayHome(); h[id]=!h[id]; save(); renderHome();
+  if(DAILY_AREAS.every(a=>h[a.id])&&h.rotate) celebrate('🏡','Home is handled!','Your space is sorted. Feel that peace 💜');
+}
+function toggleRotate() { const h=todayHome(); h.rotate=!h.rotate; save(); renderHome(); }
+function renderHome() {
+  const h=todayHome();
+  const doneCount=DAILY_AREAS.filter(a=>h[a.id]).length+(h.rotate?1:0);
+  document.getElementById('home-prog').textContent=doneCount+'/'+(DAILY_AREAS.length+1);
+  const rt=getTodayRotateTask();
+  document.getElementById('home-card').innerHTML=
+    DAILY_AREAS.map(a=>`<div class="row ${h[a.id]?'done done-yellow':''}" onclick="toggleHomeArea('${a.id}')"><div class="rcheck rcheck-sq">${h[a.id]?'✓':''}</div><div class="rico">${a.ico}</div><div class="rname">${a.name}</div><span class="rtag" style="background:var(--yel-dim);color:var(--yellow)">Daily</span></div>`).join('')+
+    `<div class="rotate-banner ${h.rotate?'rotate-done':''}" onclick="toggleRotate()"><div class="rico">${rt.ico}</div><div class="rotate-label"><div class="rotate-title">${rt.name}</div><div class="rotate-sub">${rt.sub} · today's extra</div></div><div class="rotate-check">${h.rotate?'✓':''}</div></div>`;
+}
+
+// ═══════════════════════════════════════════════
+//  TASKS
+// ═══════════════════════════════════════════════
+function toggleTodo(id) {
+  const t=S.todos.find(x=>x.id===id); if(!t) return; t.done=!t.done; save(); renderTodos();
+  if(t.done&&S.todos.filter(x=>!x.done).length===0&&S.todos.length>0) celebrate('✅','All tasks cleared!','Look at you go. Seriously.');
+}
+function deleteTodo(id,e) { e.stopPropagation(); S.todos=S.todos.filter(x=>x.id!==id); save(); renderTodos(); }
+function addTodo() {
+  const inp=document.getElementById('todo-inp');
+  const text=(inp?.value||'').trim(); if(!text) return;
+  S.todos.unshift({id:uid(),text,done:false}); inp.value=''; save(); renderTodos();
+}
+function renderTodos() {
+  const open=S.todos.filter(x=>!x.done).length;
+  document.getElementById('todo-prog').textContent=open>0?open+' open':'all done ✓';
+  const items=[...S.todos.filter(x=>!x.done),...S.todos.filter(x=>x.done)];
+  document.getElementById('todo-card').innerHTML=
+    items.map(t=>`<div class="row ${t.done?'done done-lilac':''}" onclick="toggleTodo('${t.id}')"><div class="rcheck">${t.done?'✓':''}</div><div class="rname" style="${t.done?'color:var(--muted);text-decoration:line-through':''}">${esc(t.text)}</div><button class="del-btn" onclick="deleteTodo('${t.id}',event)">×</button></div>`).join('')+
+    `<div class="add-row"><span style="font-size:17px;color:var(--muted)">📝</span><input class="add-input" placeholder="Add a task…" id="todo-inp" onkeydown="if(event.key==='Enter')addTodo()"><button class="add-btn" onclick="addTodo()">+</button></div>`;
+}
+
+// ═══════════════════════════════════════════════
+//  CONTENT
+// ═══════════════════════════════════════════════
+function markContent() { S.content[weekKey()]=true; save(); renderContent(); celebrate('🎬✨','You made something!','That took guts. So proud of you.'); }
+function renderContent() {
+  const done=S.content[weekKey()];
+  document.getElementById('content-area').innerHTML=done?`<div class="content-done">🎉 You created content this week!</div>`:`<button class="content-btn" onclick="markContent()">I made something! 🎬</button>`;
+}
+
+// ═══════════════════════════════════════════════
+//  WEEK STRIP
+// ═══════════════════════════════════════════════
+function renderWeek() {
+  const days=weekDays(),today=td(),lbls=['M','T','W','T','F','S','S'];
+  document.getElementById('wstrip').innerHTML=days.map((d,i)=>{
+    const fit=S.fitstop[d],girl=S.girlie[d],ml=S.meals[d],mDone=ml&&Object.values(ml).some(Boolean);
+    let pip=''; if(fit)pip+='💗'; if(girl)pip+='🎀'; if(mDone)pip+='🌿';
+    return `<div class="wd ${d===today?'today':''}" style="${d>today?'opacity:.35':''}"><div class="wd-lbl">${lbls[i]}</div><div class="wd-pip">${pip||'·'}</div></div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  SHEET + CELEBRATION
+// ═══════════════════════════════════════════════
+function openSheet(id)  { document.getElementById(id).classList.add('open'); }
+function closeSheet(id) { document.getElementById(id).classList.remove('open'); }
+function sheetBgClose(e,id) { if(e.target===document.getElementById(id)) closeSheet(id); }
+let celT=null;
+function celebrate(ico,msg,sub) {
+  document.getElementById('cel-ico').textContent=ico;
+  document.getElementById('cel-msg').textContent=msg;
+  document.getElementById('cel-sub').textContent=sub;
+  const el=document.getElementById('cel'); el.classList.add('show');
+  if(celT) clearTimeout(celT); celT=setTimeout(hideCel,3200);
+}
+function hideCel() { document.getElementById('cel').classList.remove('show'); }
+
+// ═══════════════════════════════════════════════
+//  GREETING
+// ═══════════════════════════════════════════════
+function greeting() {
+  const h=new Date().getHours();
+  if(h<5)  return 'Up late, Tessa 🌙';
+  if(h<12) return 'Good morning, Tessa 🌸';
+  if(h<17) return 'Good afternoon, Tessa ☀️';
+  return 'Good evening, Tessa 🌙';
+}
+
+// ═══════════════════════════════════════════════
+//  RECIPE DATA
+// ═══════════════════════════════════════════════
+const RECIPES=[
+  {id:1,cat:'breakfast',emoji:'🍫',viral:true,mealprep:true,
+   name:'Chocolate Brownie Overnight Oats',source:'TikTok viral · @panaceapalm',time:'5 min prep + overnight',servings:1,
+   cal:468,protein:47,carbs:52,fat:10,
+   ingredients:[
+     {qty:'45g',item:'Rolled oats',brand:"Carman's or Uncle Tobys"},
+     {qty:'180g',item:'0% fat Greek yoghurt',brand:'Chobani 0% Plain'},
+     {qty:'65ml',item:'Unsweetened almond milk',brand:'Vitasoy Unsweetened'},
+     {qty:'1 scoop (25g)',item:'Chocolate whey protein powder',brand:'Optimum Nutrition Gold Standard Double Chocolate'},
+     {qty:'1 tbsp',item:'Cocoa powder',brand:'Cadbury Bournville'},
+     {qty:'20g',item:'Dark chocolate chips',brand:'Lindt 70% (baking section)'},
+     {qty:'1 tsp',item:'Vanilla extract',brand:'Queen Natural Vanilla'},
+     {qty:'Pinch',item:'Salt',brand:''},
+   ],
+   method:['Add oats, yoghurt, almond milk, protein powder, cocoa, vanilla and salt to a jar.','Stir well until the protein powder is fully combined — no dry lumps.','Fold in most of the chocolate chips. Reserve a few for the top.','Seal and refrigerate overnight (minimum 4 hours, up to 3 days).','In the morning, top with remaining chocolate chips. Eat cold from the jar.'],
+   tip:'Meal prep 3 jars on Sunday and breakfast is sorted Mon–Wed. Double the protein powder if you need more.',also:[2,10]},
+
+  {id:2,cat:'breakfast',emoji:'🍞',viral:true,
+   name:'Protein French Toast',source:'TikTok viral · high protein french toast',time:'10 min',servings:1,
+   cal:375,protein:32,carbs:36,fat:12,
+   ingredients:[
+     {qty:'2 slices',item:'High-protein bread',brand:"Tip Top The One (6g protein/slice) or Helga's Wholegrain"},
+     {qty:'2 large',item:'Eggs',brand:'Free range — Pace Farm or Woolies Macro'},
+     {qty:'3 tbsp',item:'0% Greek yoghurt',brand:'Chobani Plain 0%'},
+     {qty:'½ tsp',item:'Vanilla extract',brand:'Queen Natural Vanilla'},
+     {qty:'½ tsp',item:'Cinnamon',brand:'MasterFoods'},
+     {qty:'1 tsp',item:'Honey (to serve)',brand:'Capilano Squeeze'},
+     {qty:'½ cup',item:'Mixed berries (to serve)',brand:'Fresh or Creative Gourmet frozen, thawed'},
+     {qty:'1 tsp',item:'Olive oil or butter',brand:'Cobram Estate EVOO'},
+   ],
+   method:['Whisk eggs, 1 tbsp yoghurt, vanilla and cinnamon in a shallow bowl.','Heat oil or butter in a non-stick pan over medium heat.','Dip each bread slice in the egg mixture, coating both sides. Soak 10–15 seconds per side.','Cook 2–3 minutes each side until golden and slightly puffed.','Serve topped with remaining Greek yoghurt, berries and honey.'],
+   tip:'Yoghurt on top replaces maple syrup — same creamy sweetness, way more protein. Done in 10 min, no oven.',also:[3,5]},
+
+  {id:3,cat:'breakfast',emoji:'🍞',viral:true,
+   name:'Custard Yoghurt Toast',source:'TikTok viral · @feelgoodfoodie style',time:'10 min',servings:1,
+   cal:380,protein:28,carbs:44,fat:8,
+   ingredients:[
+     {qty:'2 slices',item:'High-protein bread',brand:"Tip Top The One or Helga's Wholegrain"},
+     {qty:'150g',item:'0% Greek yoghurt',brand:'Chobani Plain 0%'},
+     {qty:'1 large',item:'Egg',brand:'Free range'},
+     {qty:'1 tsp',item:'Honey',brand:'Capilano'},
+     {qty:'½ tsp',item:'Vanilla extract',brand:'Queen Natural Vanilla'},
+     {qty:'½ cup',item:'Mixed berries (fresh or frozen)',brand:'Creative Gourmet Frozen Mixed Berries'},
+   ],
+   method:['Preheat oven grill to 180°C.','Mix yoghurt, egg, honey and vanilla until smooth.','Place bread on a lined tray. Press a shallow well in the centre of each slice.','Pour the yoghurt mixture into the well.','Add berries on top — push gently into the mixture.','Bake 12–15 minutes until custard is set and bread edges are golden.'],
+   tip:'Tastes like a Danish pastry but costs $2 and takes 10 minutes. Swap berries for sliced mango or canned peaches.',also:[1,5]},
+
+  {id:4,cat:'breakfast',emoji:'🫐',viral:false,
+   name:'Berry Protein Smoothie Bowl',source:'Classic made better',time:'5 min',servings:1,
+   cal:415,protein:38,carbs:46,fat:8,
+   ingredients:[
+     {qty:'1 scoop (30g)',item:'Vanilla whey protein powder',brand:'Optimum Nutrition Gold Standard Vanilla'},
+     {qty:'1 cup (frozen)',item:'Frozen mixed berries',brand:'Creative Gourmet Frozen Mixed Berries'},
+     {qty:'150g',item:'0% Greek yoghurt',brand:'Chobani Plain 0%'},
+     {qty:'60ml',item:'Unsweetened almond milk',brand:'Vitasoy Unsweetened'},
+     {qty:'30g',item:'Granola (topping)',brand:"Carman's Low Sugar Granola"},
+     {qty:'½ cup',item:'Fresh berries or extra frozen (thawed)',brand:'Strawberries, blueberries'},
+     {qty:'1 tbsp',item:'Chia seeds (optional)',brand:'The Chia Co.'},
+   ],
+   method:['Blend frozen berries, yoghurt, protein powder and almond milk until thick and creamy. Keep it thick — this is a bowl, not a drink.','Pour into a bowl.','Top with granola, fresh berries and chia seeds.','Eat immediately (it melts!).'],
+   tip:"Keep a bag of Creative Gourmet frozen berries in the freezer — they're cheap, last months, and work perfectly here.",also:[1,3]},
+
+  {id:5,cat:'breakfast',emoji:'🥚',viral:false,
+   name:'Scrambled Eggs, Avo & Feta on Toast',source:'The reliable classic',time:'8 min',servings:1,
+   cal:490,protein:30,carbs:34,fat:28,
+   ingredients:[
+     {qty:'3 large',item:'Eggs',brand:'Free range — Pace Farm or Woolies Macro'},
+     {qty:'2 slices',item:'High-protein bread',brand:"Tip Top The One or Helga's Wholegrain"},
+     {qty:'½',item:'Ripe avocado',brand:'Hass variety'},
+     {qty:'30g',item:'Danish feta, crumbled',brand:'Coles Danish Feta tub'},
+     {qty:'6–8',item:'Cherry tomatoes, halved',brand:''},
+     {qty:'1 tsp',item:'Olive oil or butter',brand:'Cobram Estate EVOO'},
+     {qty:'Pinch',item:'Chilli flakes (optional)',brand:'MasterFoods'},
+     {qty:'Salt + pepper',item:'To taste',brand:''},
+   ],
+   method:['Toast the bread.','Heat oil or butter in a non-stick pan on low. Crack in eggs and let start to set 30 seconds.','Gently fold eggs with a spatula — low and slow gives soft, creamy curds. Pull off heat just before fully done.','Mash avocado onto toast. Season with salt and chilli.','Top with eggs, cherry tomatoes and crumbled feta.'],
+   tip:'Soft scrambled eggs take 3 minutes on low. High heat = rubbery eggs. Low heat = the best eggs of your life.',also:[2,6]},
+
+  {id:6,cat:'lunch',emoji:'🍗',viral:true,
+   name:'Bang Bang Chicken Rice Bowl',source:'TikTok viral · high protein bang bang',time:'10 min',servings:2,
+   cal:590,protein:54,carbs:46,fat:18,
+   ingredients:[
+     {qty:'~300g',item:'Rotisserie chicken, shredded',brand:'Woolies or Coles whole roast chicken (~$13)'},
+     {qty:'2 × 250g cups',item:'Microwave jasmine rice',brand:'SunRice Microwave Cups (90 seconds)'},
+     {qty:'1',item:'Ripe avocado, sliced',brand:'Hass variety'},
+     {qty:'1',item:'Lebanese cucumber, diced',brand:''},
+     {qty:'—',item:'BANG BANG SAUCE:',brand:''},
+     {qty:'3 tbsp',item:'0% Greek yoghurt',brand:'Chobani'},
+     {qty:'2 tbsp',item:'Sriracha hot sauce',brand:'Flying Goose Sriracha'},
+     {qty:'1 tbsp',item:'Honey',brand:'Capilano'},
+     {qty:'1 tbsp',item:'Sweet chilli sauce',brand:'MasterFoods'},
+   ],
+   method:['Shred the rotisserie chicken — pull it apart with your hands over a bowl.','Microwave the rice cups for 90 seconds.','Mix the 4 sauce ingredients together in a small bowl.','Bowl it up: rice, cucumber, avocado, chicken, sauce drizzled over. Done.'],
+   tip:'Make the sauce on Sunday and keep it in a jar all week. One rotisserie chicken = at least 3 meals.',also:[7,10]},
+
+  {id:7,cat:'lunch',emoji:'🫔',viral:true,mealprep:true,
+   name:'Honey Chipotle Chicken Quesadilla',source:'TikTok viral · @meal_prep_world',time:'20 min',servings:4,
+   cal:400,protein:50,carbs:28,fat:10,
+   ingredients:[
+     {qty:'~300g',item:'Rotisserie chicken, shredded',brand:'Woolies or Coles whole roast chicken'},
+     {qty:'4 large',item:'Flour tortillas',brand:'Mission Protein or Old El Paso Large'},
+     {qty:'250g',item:'Low-fat cottage cheese, blended smooth',brand:'Dairy Farmers'},
+     {qty:'1 tbsp',item:'Chipotle paste or chipotle seasoning',brand:'MasterFoods Chipotle or Old El Paso'},
+     {qty:'1 tbsp',item:'Honey',brand:'Capilano'},
+     {qty:'1 tbsp',item:'Lime juice (or lemon)',brand:''},
+     {qty:'60g',item:'Reduced-fat shredded cheese',brand:'Woolies Reduced Fat 3-Cheese Blend'},
+   ],
+   method:['Mix blended cottage cheese with chipotle paste, honey and lime juice.','Spread sauce over half of each tortilla.','Top with shredded chicken and cheese.','Fold each tortilla in half.','Cook in a dry non-stick pan over medium heat, 2–3 min each side until golden.','Slice into wedges. Serve with Greek yoghurt instead of sour cream.'],
+   tip:'Buy one rotisserie chicken, shred it all at once, use across 3+ meals. Store shredded chicken in the fridge for 4 days.',also:[8,11]},
+
+  {id:8,cat:'lunch',emoji:'🍱',viral:false,
+   name:'Tuna, Avo & Feta Rice Bowl',source:'Quick low-waste staple',time:'5 min',servings:1,
+   cal:520,protein:42,carbs:42,fat:20,
+   ingredients:[
+     {qty:'185g tin',item:'Tuna in springwater',brand:'John West Springwater (4-pack)'},
+     {qty:'1 × 250g cup',item:'Microwave jasmine rice',brand:'SunRice Microwave Cup — 90 seconds'},
+     {qty:'½',item:'Ripe avocado, sliced',brand:'Hass variety'},
+     {qty:'½',item:'Lebanese cucumber, diced',brand:''},
+     {qty:'4',item:'Cherry tomatoes, halved',brand:''},
+     {qty:'30g',item:'Danish feta, crumbled',brand:'Coles Danish Feta tub'},
+     {qty:'1 tbsp',item:'Soy sauce (or tamari)',brand:'Kikkoman Reduced Salt'},
+     {qty:'1 tsp',item:'Sesame oil',brand:"Obento or Chang's"},
+     {qty:'1 tsp',item:'Sesame seeds',brand:'Woolies own brand'},
+     {qty:'1 tsp',item:'Sriracha (optional)',brand:'Flying Goose'},
+   ],
+   method:['Microwave the rice cup for 90 seconds.','Drain tuna well and fluff with a fork.','Bowl it up: rice, tuna, avocado, cucumber, tomatoes, feta.','Drizzle soy sauce and sesame oil over everything.','Sprinkle sesame seeds and sriracha if using. Mix and eat.'],
+   tip:"Avocado + feta takes this from a plain tuna bowl to something actually worth eating. Keep avo on the bench to ripen — fridge once it's ready.",also:[13,15]},
+
+  {id:9,cat:'lunch',emoji:'🌮',viral:true,mealprep:true,
+   name:'Cottage Cheese Taco Dip',source:'TikTok viral · high protein queso',time:'15 min',servings:4,
+   cal:350,protein:44,carbs:18,fat:10,
+   ingredients:[
+     {qty:'500g',item:'Low-fat cottage cheese, blended smooth',brand:'Dairy Farmers or Warnambool'},
+     {qty:'400g',item:'Lean turkey mince',brand:"Ingham's Turkey Mince"},
+     {qty:'1 packet',item:'Taco seasoning',brand:'Old El Paso Original'},
+     {qty:'400g tin',item:'Diced tomatoes',brand:'Mutti Polpa or any brand'},
+     {qty:'1 cup',item:'Reduced-fat shredded cheese',brand:'Woolies Reduced Fat 3-Cheese Blend'},
+     {qty:'—',item:'FOR DIPPING:',brand:''},
+     {qty:'12',item:'Corn thins or rice cakes',brand:'Real Foods Corn Thins'},
+     {qty:'1 bag',item:'Capsicum strips or carrot sticks',brand:'Any fresh capsicum'},
+   ],
+   method:['Cook turkey mince in a pan over medium-high, breaking up clumps, until browned (5–6 min).','Add taco seasoning and diced tomatoes. Stir and simmer 3–4 min until thickened.','Blend cottage cheese until completely smooth.','Layer blended cottage cheese in the bottom of a serving dish.','Top with the turkey mince mixture.','Scatter shredded cheese on top. Microwave 1 minute until cheese melts.','Serve warm with corn thins and capsicum strips for dipping.'],
+   tip:"Make the turkey mince base in bulk — it's also the base for the turkey bolognese. Cook once, eat twice.",also:[14,16]},
+
+  {id:10,cat:'lunch',emoji:'🌯',viral:false,
+   name:'Rotisserie Chicken Caesar Wrap',source:'Fast & filling',time:'5 min',servings:1,
+   cal:420,protein:42,carbs:30,fat:14,
+   ingredients:[
+     {qty:'150g',item:'Rotisserie chicken, shredded',brand:'Coles or Woolies whole rotisserie chicken'},
+     {qty:'1 large',item:'Flour tortilla',brand:'Mission Protein Wrap'},
+     {qty:'2–3 leaves',item:'Cos lettuce',brand:'Buy a whole cos head'},
+     {qty:'2 tbsp',item:'Light caesar dressing',brand:"Paul's Lite Caesar or Praise 97% Fat Free"},
+     {qty:'15g',item:'Shaved parmesan',brand:'Coles or Woolies deli section'},
+     {qty:'4–5',item:'Cherry tomatoes (optional)',brand:''},
+   ],
+   method:['Lay tortilla flat.','Spread caesar dressing down the centre.','Layer on cos lettuce.','Top with shredded chicken, tomatoes and parmesan.','Fold in the sides, roll tightly from the bottom.','Cut in half on the diagonal.'],
+   tip:'This is a 5-minute lunch if you have rotisserie chicken already shredded. Buy one whole chicken, shred it all at once, use across 3 meals.',also:[7,11]},
+  {id:11,cat:'dinner',emoji:'🧅',viral:true,mealprep:true,
+   name:'Caramelised Onion Creamy Chicken',source:'TikTok viral · @jalalsamfit',time:'20 min',servings:4,
+   cal:590,protein:55,carbs:58,fat:16,
+   ingredients:[
+     {qty:'1 whole',item:'Rotisserie chicken, shredded',brand:'Woolies or Coles (~$13)'},
+     {qty:'4 tbsp',item:'Caramelised onion relish',brand:'Beerenberg Caramelised Onion Relish (Woolies condiments) — this is the cheat code'},
+     {qty:'4 cloves',item:'Garlic, minced',brand:'Or 1 tsp MasterFoods Minced Garlic from a jar'},
+     {qty:'200g',item:'0% Greek yoghurt',brand:'Chobani Plain 0%'},
+     {qty:'80g',item:'Light cream cheese',brand:'Philadelphia Light Cream Cheese (block)'},
+     {qty:'1 cup',item:'Chicken stock',brand:'Campbells Real Chicken Stock'},
+     {qty:'1 tsp each',item:'Thyme, paprika, salt, pepper',brand:'MasterFoods'},
+     {qty:'1 tbsp',item:'Olive oil',brand:'Cobram Estate'},
+     {qty:'4 × 250g cups',item:'Microwave jasmine rice',brand:'SunRice Microwave Cups — 90 seconds each'},
+   ],
+   method:["Shred the rotisserie chicken and set aside.",'Heat olive oil in a pan. Add garlic and cook 1 minute.','Add caramelised onion relish and stir through. Cook 2 minutes.','Pour in stock, add thyme, paprika, salt and pepper. Bring to a simmer.','Take off heat. Stir in cream cheese until melted, then fold in Greek yoghurt. Don\'t boil after adding yoghurt.','Stir the shredded chicken through the sauce.','Microwave rice cups 90 seconds. Serve chicken sauce over rice.'],
+   tip:'Beerenberg Caramelised Onion Relish cuts 25 minutes of stirring onions down to zero. Makes 4 serves — store sauce separately from rice in the fridge.',also:[7,10]},
+
+  {id:12,cat:'dinner',emoji:'🐟',viral:false,
+   name:'Lemon Garlic Salmon & Sweet Potato Tray Bake',source:'Effortless one-tray wonder',time:'35 min',servings:2,
+   cal:490,protein:44,carbs:38,fat:14,
+   ingredients:[
+     {qty:'2 × 180g',item:'Salmon fillets',brand:'Coles or Woolies fresh salmon or Huon frozen portions'},
+     {qty:'2 medium',item:'Sweet potatoes, cubed (2cm)',brand:'Any — Queensland sweet potato'},
+     {qty:'1 whole',item:'Lemon',brand:'Buy a 3-pack'},
+     {qty:'4 cloves',item:'Garlic, sliced',brand:''},
+     {qty:'1 tbsp',item:'Olive oil',brand:'Cobram Estate'},
+     {qty:'1 tsp',item:'Smoked paprika',brand:'MasterFoods'},
+     {qty:'2 big handfuls',item:'Baby spinach (served alongside)',brand:'Coles or Woolies pre-washed bag'},
+     {qty:'Salt + pepper',item:'',brand:''},
+   ],
+   method:['Preheat oven to 200°C fan-forced.','Toss sweet potato with olive oil, garlic, paprika, salt and pepper. Spread on a lined tray.','Roast sweet potato 20 minutes.','Push to the sides. Place salmon in the centre.','Drizzle salmon with olive oil and lemon juice. Season.','Roast a further 12–15 min until salmon flakes easily.','Serve salmon and sweet potato on baby spinach. Squeeze lemon over everything.'],
+   tip:'Frozen salmon portions are just as good as fresh and often cheaper. Thaw overnight in the fridge.',also:[2,5]},
+
+  {id:13,cat:'dinner',emoji:'🥘',viral:false,
+   name:'Turkey Mince Stir Fry Bowl',source:'15-minute weeknight hero',time:'15 min',servings:4,
+   cal:420,protein:48,carbs:38,fat:10,
+   ingredients:[
+     {qty:'500g',item:'Turkey mince',brand:"Ingham's Turkey Mince"},
+     {qty:'2 cups',item:'Frozen mixed vegetables',brand:'McCain Stir Fry Vegetables'},
+     {qty:'3 cloves',item:'Garlic, minced',brand:'Or from jar — MasterFoods'},
+     {qty:'1 tsp',item:'Fresh ginger (or ¼ tsp ground ginger)',brand:''},
+     {qty:'2 tbsp',item:'Soy sauce',brand:'Kikkoman Reduced Salt'},
+     {qty:'1 tbsp',item:'Oyster sauce',brand:'Lee Kum Kee'},
+     {qty:'1 tsp',item:'Sesame oil',brand:"Obento or Chang's"},
+     {qty:'1 tsp',item:'Cornflour + 2 tbsp water',brand:'Any brand'},
+     {qty:'4 × 250g cups',item:'Microwave jasmine rice',brand:'SunRice Microwave Cups'},
+   ],
+   method:['Heat a wok or large pan over high heat.','Add mince, breaking up lumps immediately. Cook 5–6 min until browned.','Add garlic and ginger, cook 1 minute.','Add frozen vegetables straight from the freezer. Stir-fry 3–4 min.','Mix soy sauce, oyster sauce, sesame oil and cornflour together, pour over. Toss to coat.','Microwave rice cups 90 seconds. Serve stir fry over rice.'],
+   tip:"This is faster than waiting for takeaway. Turkey mince cooks quicker than beef — done in 5 minutes.",also:[8,15]},
+
+  {id:14,cat:'dinner',emoji:'🍝',viral:false,mealprep:true,
+   name:'High-Protein Turkey Bolognese',source:'Lean spin on the classic',time:'30 min',servings:5,
+   cal:480,protein:48,carbs:48,fat:8,
+   ingredients:[
+     {qty:'500g',item:'Turkey mince',brand:"Ingham's Turkey Mince"},
+     {qty:'1 large',item:'Brown onion, diced',brand:''},
+     {qty:'4 cloves',item:'Garlic, minced',brand:'Or from jar'},
+     {qty:'700g jar',item:'Tomato passata',brand:"Mutti Passata (Woolies) or Leggo's"},
+     {qty:'2 tbsp',item:'Tomato paste',brand:"Leggo's or Mutti"},
+     {qty:'1 tsp each',item:'Dried basil, oregano, salt, pepper',brand:'MasterFoods Italian Herb Blend'},
+     {qty:'200g',item:'Pasta of choice (dry weight)',brand:'San Remo or Barilla Penne'},
+     {qty:'30g',item:'Shaved parmesan (serving)',brand:'Coles deli or pre-packed'},
+     {qty:'1 tbsp',item:'Olive oil',brand:'Cobram Estate'},
+   ],
+   method:['Heat oil in a large pot. Cook onion 3–4 min until soft.','Add garlic, cook 1 minute.','Add turkey mince, break up lumps, cook until browned (5–6 min).','Add tomato paste and stir 1 minute.','Pour in passata, add herbs, salt and pepper. Stir well.','Simmer on low for 20 minutes, stirring occasionally.','Cook pasta per packet. Drain, reserving ½ cup pasta water.','Stir pasta water into bolognese if dry. Serve sauce over pasta with parmesan.'],
+   tip:'Make double and freeze half. Turkey mince is significantly leaner than beef — similar flavour, half the fat.',also:[9,13]},
+
+  {id:15,cat:'dinner',emoji:'🍳',viral:true,
+   name:'High-Protein Egg Fried Rice',source:'TikTok meal prep staple',time:'12 min (use cold rice)',servings:2,
+   cal:390,protein:26,carbs:48,fat:10,
+   ingredients:[
+     {qty:'3 × 250g cups',item:'Microwave rice — cooked then cooled (MUST be cold)',brand:'SunRice Microwave Cups — microwave, spread on a plate, fridge 30 min minimum'},
+     {qty:'4 large',item:'Eggs',brand:'Free range'},
+     {qty:'1 cup',item:'Frozen peas',brand:'McCain or Birds Eye'},
+     {qty:'3 tbsp',item:'Soy sauce',brand:'Kikkoman Reduced Salt'},
+     {qty:'1 tbsp',item:'Oyster sauce',brand:'Lee Kum Kee'},
+     {qty:'2 tsp',item:'Sesame oil',brand:"Obento or Chang's"},
+     {qty:'3 cloves',item:'Garlic, minced',brand:''},
+     {qty:'3',item:'Spring onions, sliced',brand:'1 bunch'},
+     {qty:'Optional',item:'Add leftover chicken or turkey mince',brand:'From the week\'s other meals'},
+   ],
+   method:['Beat eggs together and set aside.','Heat a wok or large pan over HIGH heat — very hot is important.','Add a splash of oil. Fry garlic 30 seconds.','Add cold rice and break up all clumps. Spread out and press down. Let sit 1–2 min without stirring to get crispy.','Push rice to the side. Pour eggs into empty space and scramble quickly.','Mix eggs through the rice before they fully set.','Add peas, soy sauce, oyster sauce and sesame oil. Toss everything on high heat 2 minutes.','Stir through spring onions. Taste and adjust seasoning.'],
+   tip:"Cold rice is the only rule you can't skip — warm rice turns to mush. Shortcut: microwave SunRice cups, spread flat on a plate, fridge for 30 min.",also:[8,13]},
+
+  {id:16,cat:'dinner',emoji:'🫑',viral:true,
+   name:'Chicken Fajita Bowl with Yoghurt Crema',source:'TikTok 2025/26 viral · high protein fajita',time:'20 min',servings:3,
+   cal:430,protein:50,carbs:28,fat:10,
+   ingredients:[
+     {qty:'~300g',item:'Rotisserie chicken, shredded',brand:'Woolies or Coles whole roast chicken'},
+     {qty:'2',item:'Capsicums (red + yellow), sliced',brand:'Buy a 3-pack'},
+     {qty:'1 large',item:'Red onion, sliced',brand:''},
+     {qty:'1 packet',item:'Fajita or taco seasoning',brand:'Old El Paso Fajita Seasoning'},
+     {qty:'1 tbsp',item:'Olive oil',brand:'Cobram Estate'},
+     {qty:'—',item:'YOGHURT CREMA:',brand:''},
+     {qty:'4 tbsp',item:'0% Greek yoghurt',brand:'Chobani'},
+     {qty:'1',item:'Lime, juiced (or 1 tbsp lemon juice)',brand:''},
+     {qty:'Pinch',item:'Salt + garlic powder',brand:''},
+     {qty:'3 × 250g cups',item:'Microwave rice',brand:'SunRice Cups — 90 seconds'},
+   ],
+   method:['Mix yoghurt crema ingredients together and set aside.','Heat a pan on HIGH. Toss capsicum and onion with olive oil and fajita seasoning. Cook 4–5 min until slightly charred.','Add shredded chicken to the pan and toss 1–2 min just to warm through.','Microwave rice cups 90 seconds.','Bowl it up: rice base, fajita mix on top, yoghurt crema drizzled over.'],
+   tip:'The capsicum + onion is the only real cooking here — everything else is assembly. Cauliflower rice (4 min microwave) cuts carbs if you want a lighter option.',also:[7,11]},
+
+  {id:17,cat:'snack',emoji:'🍎',viral:false,
+   name:'Apple & Almond Butter',source:'Classic · grab and go',time:'2 min',servings:1,
+   cal:230,protein:5,carbs:28,fat:12,
+   ingredients:[
+     {qty:'1 large',item:'Apple (any variety)',brand:'Pink Lady or Fuji — buy a bag'},
+     {qty:'2 tbsp',item:'Almond butter or peanut butter',brand:"Pics Peanut Butter (no added sugar) or Mayver's Almond Butter"},
+   ],
+   method:['Slice the apple.','Dip in nut butter.'],
+   tip:"Keep a jar of Pics peanut butter in the pantry. Apple + nut butter is 12g fat and keeps you full for hours. The best 'I need something now' snack.",also:[4]},
+
+  {id:18,cat:'snack',emoji:'🫐',viral:false,
+   name:'Berry & Yoghurt Bowl',source:'Refreshing · 2 min',time:'2 min',servings:1,
+   cal:210,protein:18,carbs:24,fat:5,
+   ingredients:[
+     {qty:'150g',item:'2% Greek yoghurt',brand:'Chobani 2%'},
+     {qty:'1 cup',item:'Mixed berries — fresh or frozen thawed',brand:'Creative Gourmet frozen or fresh'},
+     {qty:'1 tbsp',item:'Honey or maple syrup',brand:'Capilano'},
+     {qty:'1 tbsp',item:'Granola or chopped nuts (optional)',brand:"Carman's Low Sugar Granola"},
+   ],
+   method:['Spoon yoghurt into a bowl.','Pile berries on top.','Drizzle honey, add granola or nuts if you want.'],
+   tip:'Keep Creative Gourmet frozen berries in the freezer and thaw a cup in the fridge the night before.',also:[3,4]},
+
+  {id:19,cat:'snack',emoji:'🥑',viral:false,
+   name:'Avo & Feta Rice Cakes',source:'Easy · 3 min',time:'3 min',servings:1,
+   cal:245,protein:6,carbs:20,fat:16,
+   ingredients:[
+     {qty:'3',item:'Corn or rice cakes',brand:'Corn Thins Original or Sakata Rice Crackers'},
+     {qty:'½',item:'Ripe avocado',brand:'Hass variety'},
+     {qty:'30g',item:'Danish feta, crumbled',brand:'Coles Danish Feta (tub)'},
+     {qty:'Pinch',item:'Chilli flakes + salt',brand:'MasterFoods'},
+     {qty:'Squeeze',item:'Lemon juice',brand:''},
+   ],
+   method:['Mash avocado onto rice cakes with a fork.','Crumble feta over the top.','Season with chilli flakes, salt and a squeeze of lemon.'],
+   tip:'16g fat, super satisfying, done in 3 minutes. Keep a tub of Danish feta in the fridge — it lasts 2 weeks once opened.',also:[5]},
+
+  {id:20,cat:'snack',emoji:'🍫',viral:true,
+   name:'Frozen Yoghurt Bark',source:'TikTok viral · make-ahead sweet treat',time:'5 min + 20 min freeze',servings:4,
+   cal:165,protein:14,carbs:16,fat:7,
+   ingredients:[
+     {qty:'200g',item:'2% Greek yoghurt',brand:'Chobani 2%'},
+     {qty:'1 scoop (25g)',item:'Chocolate whey protein powder',brand:'Optimum Nutrition Gold Standard Double Chocolate'},
+     {qty:'20g',item:'Dark chocolate chips',brand:'Lindt 70% (baking section)'},
+     {qty:'½ cup',item:'Mixed berries (fresh or frozen)',brand:'Blueberries + raspberries work best'},
+     {qty:'1 tsp',item:'Honey',brand:'Capilano'},
+   ],
+   method:['Mix yoghurt, protein powder and honey until smooth.','Spread about 5mm thick on a lined baking tray or flat container.','Scatter chocolate chips and berries over the top.','Freeze at least 20 min until firm. Break into pieces.','Store in the freezer — grab a piece when you want something sweet.'],
+   tip:"Make a double batch — keeps in the freezer for 2 weeks. This is the 'I want dessert but I'm trying' snack.",also:[1,4]},
+
+  {id:21,cat:'snack',emoji:'🥭',viral:false,
+   name:'Mango & Mixed Nuts',source:'No prep · grab and go',time:'1 min',servings:1,
+   cal:280,protein:6,carbs:28,fat:16,
+   ingredients:[
+     {qty:'1 medium',item:'Fresh mango (or 1 cup frozen mango, thawed)',brand:'Woolies has fresh mangoes in season — Creative Gourmet frozen any time'},
+     {qty:'30g',item:'Mixed nuts',brand:'Woolies Mixed Nuts (unsalted)'},
+   ],
+   method:['Slice the mango (or thaw frozen mango chunks).','Grab a handful of nuts.','Done.'],
+   tip:'Pre-portion nuts into 30g serves at the start of the week. Mango + nuts = fat + fruit + satisfaction.',also:[4]},
+
+  {id:22,cat:'snack',emoji:'🍊',viral:false,
+   name:'Fruit Plate',source:'Zero prep · refreshing',time:'2 min',servings:1,
+   cal:130,protein:2,carbs:32,fat:0,
+   ingredients:[
+     {qty:'Any 2 pieces or 1 cup',item:'Seasonal fruit — whatever looks good',brand:'Oranges, mandarins, grapes, strawberries, watermelon, kiwi, stone fruit'},
+   ],
+   method:['Cut it up.','Eat it.'],
+   tip:"Buy whatever's on special and in season. A fruit plate with a handful of nuts = a balanced snack with fat, fibre and natural sugar.",also:[4]},
+
+  {id:23,cat:'snack',emoji:'🍫',viral:false,
+   name:'Dark Chocolate (daily ritual)',source:'Non-negotiable · built in',time:'0 min',servings:1,
+   cal:120,protein:2,carbs:10,fat:9,
+   ingredients:[
+     {qty:'20–25g (3–4 squares)',item:'Dark chocolate 70%+',brand:'Lindt 70% Dark (Excellence bar, Woolies/Coles) — or 85% if you like more intense'},
+   ],
+   method:['Break off 3–4 squares.','Eat slowly and actually enjoy it.'],
+   tip:"This is not a cheat. This is intentional. 70%+ dark chocolate is ~9g fat and ~2g protein, takes the edge off sugar cravings. Buy one bar a week, make it last.",also:[20]},
+];
+// ═══════════════════════════════════════════════
+//  SHOP SMART DATA
+// ═══════════════════════════════════════════════
+const HEROES=[
+  {ico:'🍗',name:'Woolies/Coles Rotisserie Chicken',sub:'~$13 · grab one each week · already cooked',tag:'Zero-effort protein',tagColor:'var(--pink)',uses:[6,7,10,11,16],tip:'Buy one per week. Shred the whole thing at once and store in the fridge. Covers the bang bang bowl, quesadillas, caesar wrap, fajita bowl, and creamy chicken. No cooking. Just pulling apart.'},
+  {ico:'🥛',name:'Chobani 0% Greek yoghurt',sub:'2x 900g tubs · Woolies/Coles',tag:'Sauce + breakfast',tagColor:'var(--blue)',uses:[1,3,4,6,7,11,16],tip:'Replaces sour cream, cream in sauces, and adds protein to every breakfast. One tub ≈ 10 servings.'},
+  {ico:'🧀',name:'Low-fat cottage cheese',sub:'Dairy Farmers or Warnambool · 2 × 500g tubs',tag:'Secret weapon',tagColor:'var(--lil)',uses:[2,7,9],tip:"Blended smooth, it's completely invisible. Becomes a sauce, a flatbread, a dip. Tastes like nothing, adds 14g protein per 100g."},
+  {ico:'🦃',name:'Turkey mince',sub:"Ingham's · 2 × 500g packs · Woolies/Coles",tag:'Dinner base',tagColor:'var(--peach)',uses:[9,13,14],tip:'Leaner than beef, cooks the same way. The taco dip and the bolognese use identical technique — cook double and split.'},
+  {ico:'🥚',name:'Free-range eggs (dozen)',sub:'Pace Farm or Woolies Macro · buy 2 dozen',tag:'Everyday protein',tagColor:'var(--yel)',uses:[2,3,5,6,15],tip:"Featured in 5 recipes. One egg = 6g protein, ~70 cal. Always have eggs — they're the fastest high-protein meal in any situation."},
+  {ico:'🍚',name:'SunRice Microwave Cups',sub:'Box of 6 × 250g · Woolies/Coles rice aisle',tag:'Base carb',tagColor:'var(--green)',uses:[6,8,11,13,15,16],tip:'90 seconds in the microwave. Used in 6 recipes. No cooking, no mess. For egg fried rice, microwave first then spread on a plate and cool in the fridge for 30 min — cold rice is the only step you can\'t skip.'},
+  {ico:'🍅',name:'Tinned tomatoes + passata',sub:'4 × diced tins + 2 × Mutti passata · Woolies',tag:'Sauce base',tagColor:'#ef4444',uses:[9,14],tip:'Mutti is the best quality for the price. Passata for bolognese, diced for taco dip.'},
+  {ico:'🫙',name:'Soy sauce + oyster sauce',sub:'Kikkoman Reduced Salt + Lee Kum Kee · Asian aisle',tag:'Flavour pack',tagColor:'#92400e',uses:[8,13,15],tip:'These two sauces flavour the tuna bowl, stir fry, and egg fried rice. A $6 investment that covers 3 meals every week.'},
+];
+
+// ═══════════════════════════════════════════════
+//  RECIPE STATE
+// ═══════════════════════════════════════════════
+let currentFilter='all', currentDetailId=null;
+const CAT_COLORS={breakfast:'var(--yel)',lunch:'var(--green)',dinner:'var(--pink)',snack:'var(--lil)'};
+const CAT_LABELS={breakfast:'Breakfast',lunch:'Lunch',dinner:'Dinner',snack:'Snack'};
+
+function getFavs() { return JSON.parse(localStorage.getItem('recipe_favs')||'[]'); }
+function saveFavs(a) { localStorage.setItem('recipe_favs',JSON.stringify(a)); }
+function isFav(id) { return getFavs().includes(id); }
+function toggleFav(id) { let a=getFavs(); a.includes(id)?a.splice(a.indexOf(id),1):a.push(id); saveFavs(a); }
+
+function getPlan() {
+  const stored=JSON.parse(localStorage.getItem('recipe_plan')||'{}');
+  if(stored.week!==weekKey()) return {week:weekKey()};
+  return stored;
+}
+function savePlan(p) { p.week=weekKey(); localStorage.setItem('recipe_plan',JSON.stringify(p)); }
+
+let planPickingCat=null;
+
+// ═══════════════════════════════════════════════
+//  PLAN SHEET
+// ═══════════════════════════════════════════════
+function openPlanSheet(cat) {
+  planPickingCat=cat;
+  const labels={breakfast:'🌅 Pick your breakfast',lunch:'☀️ Pick your lunch',dinner:'🌙 Pick your dinner'};
+  document.getElementById('plan-sheet-title').textContent=labels[cat];
+  const recipes=RECIPES.filter(r=>r.cat===cat);
+  document.getElementById('plan-sheet-list').innerHTML=recipes.map(r=>`<div class="plan-pick-item" onclick="selectPlanMeal(${r.id})"><span class="plan-pick-emoji">${r.emoji}</span><div style="flex:1"><div class="plan-pick-name">${r.name}</div><div class="plan-pick-meta">⏱ ${r.time} · 🥩 ${r.protein}g protein · ${r.cal} cal</div></div></div>`).join('');
+  document.getElementById('plan-sheet').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closePlanSheet() { document.getElementById('plan-sheet').classList.remove('open'); document.body.style.overflow=''; planPickingCat=null; }
+function selectPlanMeal(id) {
+  if(!planPickingCat) return;
+  const plan=getPlan(); plan[planPickingCat]=id; savePlan(plan);
+  closePlanSheet(); renderWeekPlan(); renderShopList();
+}
+
+function renderWeekPlan() {
+  const plan=getPlan();
+  ['breakfast','lunch','dinner'].forEach(cat=>{
+    const id=plan[cat];
+    const slotEl=document.getElementById('slot-'+cat);
+    const icoEl=document.getElementById('slot-'+cat+'-ico');
+    if(id) {
+      const r=RECIPES.find(x=>x.id===id);
+      if(r) {
+        slotEl.innerHTML=`<div class="meal-slot-name">${r.name}</div><div class="meal-slot-sub">${r.protein}g protein · ${r.cal} cal</div>`;
+        icoEl.textContent=r.emoji;
+        slotEl.parentElement.onclick=(e)=>{ if(e.target.classList.contains('meal-slot-clear')){ e.stopPropagation(); clearPlanMeal(cat); } else { openPlanSheet(cat); } };
+      }
+    } else {
+      slotEl.innerHTML=`<div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div>`;
+      icoEl.textContent='➕';
+    }
+  });
+}
+function clearPlanMeal(cat) { const plan=getPlan(); delete plan[cat]; savePlan(plan); renderWeekPlan(); renderShopList(); }
+
+// ═══════════════════════════════════════════════
+//  SHOPPING LIST
+// ═══════════════════════════════════════════════
+function renderShopList() {
+  const plan=getPlan();
+  const selectedIds=['breakfast','lunch','dinner'].map(c=>plan[c]).filter(Boolean);
+  const card=document.getElementById('week-shop-list');
+  const itemsEl=document.getElementById('week-shop-items');
+  if(selectedIds.length===0) { card.classList.remove('visible'); return; }
+  card.classList.add('visible');
+  const CAT_LABELS_PLAN={breakfast:'🌅 Breakfast',lunch:'☀️ Lunch',dinner:'🌙 Dinner'};
+  let html='', plainText="🛒 This week's shopping list\n\n";
+  ['breakfast','lunch','dinner'].forEach(cat=>{
+    const id=plan[cat]; if(!id) return;
+    const r=RECIPES.find(x=>x.id===id); if(!r) return;
+    html+=`<div class="shop-meal-label">${CAT_LABELS_PLAN[cat]} — ${r.name}</div>`;
+    plainText+=`${CAT_LABELS_PLAN[cat]}: ${r.name}\n`;
+    r.ingredients.forEach(ing=>{
+      if(ing.qty==='—') return;
+      html+=`<div class="shop-ing-row"><span class="shop-ing-qty">${ing.qty}</span><div style="flex:1"><div class="shop-ing-name">${ing.item}</div>${ing.brand?`<div class="shop-ing-from">🏪 ${ing.brand}</div>`:''}</div></div>`;
+      plainText+=`  • ${ing.qty} ${ing.item}${ing.brand?' ('+ing.brand+')':''}\n`;
+    });
+    plainText+='\n';
+  });
+  itemsEl.innerHTML=html; itemsEl._plainText=plainText;
+}
+function copyShopList() {
+  const itemsEl=document.getElementById('week-shop-items');
+  const text=itemsEl._plainText||''; if(!text) return;
+  const btn=document.getElementById('shop-copy-btn');
+  const done=()=>{ btn.textContent='✓ Copied!'; btn.classList.add('done'); setTimeout(()=>{ btn.textContent='Copy list'; btn.classList.remove('done'); },2000); };
+  navigator.clipboard.writeText(text).then(done).catch(()=>{
+    const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done();
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  HEART / FAVOURITES
+// ═══════════════════════════════════════════════
+function updateDetailHeart(id) {
+  const btn=document.getElementById('detail-heart');
+  if(isFav(id)) { btn.classList.add('active'); btn.innerHTML='<span>❤️</span> Saved!'; }
+  else { btn.classList.remove('active'); btn.innerHTML='<span id="detail-heart-ico">🤍</span> Save favourite'; }
+}
+function toggleDetailHeart() {
+  if(!currentDetailId) return;
+  toggleFav(currentDetailId); updateDetailHeart(currentDetailId); renderGrid();
+}
+function tapCardHeart(id,btn) {
+  toggleFav(id); btn.textContent=isFav(id)?'❤️':'🤍';
+  if(currentFilter==='favs') renderGrid();
+}
+
+// ═══════════════════════════════════════════════
+//  RECIPE GRID + FILTERS
+// ═══════════════════════════════════════════════
+function setFilter(f) {
+  currentFilter=f;
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.toggle('active',t.dataset.f===f));
+  renderGrid();
+}
+function renderGrid() {
+  let recipes;
+  if(currentFilter==='favs') { const favIds=getFavs(); recipes=RECIPES.filter(r=>favIds.includes(r.id)); }
+  else if(currentFilter==='all') { recipes=RECIPES; }
+  else { recipes=RECIPES.filter(r=>r.cat===currentFilter); }
+  const favIds=getFavs();
+  if(recipes.length===0) {
+    document.getElementById('recipe-grid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px 16px;color:var(--muted)"><div style="font-size:40px;margin-bottom:8px">🤍</div><div style="font-size:14px;font-weight:700">No favourites yet</div><div style="font-size:13px;margin-top:4px">Open a recipe and tap Save favourite</div></div>`;
+    return;
+  }
+  document.getElementById('recipe-grid').innerHTML=recipes.map(r=>{
+    const cc=CAT_COLORS[r.cat]; const fav=favIds.includes(r.id);
+    return `<div class="rcard" onclick="openRecipe(${r.id})"><div class="rcard-top" style="background:linear-gradient(180deg,${cc}18,transparent)"><button class="heart-btn" onclick="event.stopPropagation();tapCardHeart(${r.id},this)">${fav?'❤️':'🤍'}</button>${r.viral?`<div class="viral-badge">🔥 VIRAL</div>`:r.mealprep?`<div class="prep-badge">🍱 MEAL PREP</div>`:''}<div style="font-size:44px">${r.emoji}</div></div><div class="rcard-body"><div class="rcard-name">${r.name}</div><div class="rcard-cat" style="color:${cc}">${CAT_LABELS[r.cat]}</div><div class="rcard-macros"><div class="mac" style="background:${cc}18"><div class="mac-n" style="color:${cc}">${r.cal}</div><div class="mac-l">cal</div></div><div class="mac" style="background:rgba(82,201,135,.1)"><div class="mac-n" style="color:var(--green)">${r.protein}g</div><div class="mac-l">protein</div></div></div><div class="rcard-time">⏱ ${r.time}</div></div></div>`;
+  }).join('');
+}
+function renderFilters() {
+  const filters=[{f:'all',label:'All recipes'},{f:'favs',label:'❤️ Favourites'},{f:'breakfast',label:'🌅 Breakfast'},{f:'lunch',label:'☀️ Lunch'},{f:'dinner',label:'🌙 Dinner'},{f:'snack',label:'🍫 Snacks'}];
+  document.getElementById('filter-row').innerHTML=filters.map(f=>`<button class="ftab ${f.f==='all'?'active':''}" data-f="${f.f}" onclick="setFilter('${f.f}')">${f.label}</button>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  RECIPE DETAIL
+// ═══════════════════════════════════════════════
+function renderDetail(r) {
+  const cc=CAT_COLORS[r.cat];
+  const alsoRecipes=(r.also||[]).map(id=>RECIPES.find(x=>x.id===id)).filter(Boolean);
+  const ingsHtml=r.ingredients.map(ing=>
+    ing.qty==='—'?`<div style="font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding:10px 0 4px">${ing.item}</div>`:
+    `<div class="ing-item"><div class="ing-qty">${ing.qty}</div><div class="ing-body"><div class="ing-name">${ing.item}</div>${ing.brand?`<div class="ing-brand">🏪 ${ing.brand}</div>`:''}</div></div>`
+  ).join('');
+  const stepsHtml=r.method.map((s,i)=>`<div class="step-item"><div class="step-n">${i+1}</div><div class="step-text">${s}</div></div>`).join('');
+  const alsoHtml=alsoRecipes.length?`<div class="detail-section-title">These ingredients appear in</div><div class="also-row">${alsoRecipes.map(ar=>`<div class="also-chip" onclick="openRecipe(${ar.id})">${ar.emoji} ${ar.name}</div>`).join('')}</div>`:'';
+  document.getElementById('detail-content').innerHTML=`
+    <div class="detail-hero" style="background:linear-gradient(180deg,${cc}18,var(--bg))">
+      <span class="detail-emoji">${r.emoji}</span>
+      <div class="detail-name">${r.name}</div>
+      ${r.viral?`<div class="detail-viral">🔥 ${r.source}</div>`:`<div class="detail-time" style="color:var(--muted)">${r.source}</div>`}
+      <div class="detail-time">⏱ ${r.time} · ${r.servings} serve${r.servings>1?'s':''}</div>
+    </div>
+    <div class="macro-row">
+      <div class="mac-card" style="background:${cc}18"><div class="mac-card-n" style="color:${cc}">${r.cal}</div><div class="mac-card-l">calories</div></div>
+      <div class="mac-card" style="background:rgba(82,201,135,.12)"><div class="mac-card-n" style="color:var(--green)">${r.protein}g</div><div class="mac-card-l">protein</div></div>
+      <div class="mac-card" style="background:rgba(96,165,250,.12)"><div class="mac-card-n" style="color:var(--blue)">${r.carbs}g</div><div class="mac-card-l">carbs</div></div>
+      <div class="mac-card" style="background:rgba(192,132,252,.12)"><div class="mac-card-n" style="color:var(--lil)">${r.fat}g</div><div class="mac-card-l">fat</div></div>
+    </div>
+    <div class="detail-section"><div class="detail-section-title">Ingredients</div>${ingsHtml}</div>
+    <div class="detail-section"><div class="detail-section-title">Method</div>${stepsHtml}</div>
+    ${r.tip?`<div class="detail-section"><div class="detail-section-title">Tessa's tip</div><div class="tip-box"><strong>💡 TIP</strong>${r.tip}</div></div>`:''}
+    <div class="detail-section">${alsoHtml}</div>`;
+}
+
+// ═══════════════════════════════════════════════
+//  SHOP SMART
+// ═══════════════════════════════════════════════
+function renderShop() {
+  document.getElementById('shop-list').innerHTML=HEROES.map(h=>{
+    const usedIn=h.uses.map(id=>RECIPES.find(r=>r.id===id)).filter(Boolean);
+    return `<div class="ing-group"><div class="ing-group-head"><div class="ing-group-ico">${h.ico}</div><div style="flex:1"><div class="ing-group-name">${h.name}</div><div class="ing-group-sub">${h.sub}</div></div><div class="ing-group-tag" style="background:${h.tagColor}18;color:${h.tagColor}">${h.tag}</div></div><div style="padding:12px 16px 4px;font-size:12px;color:var(--muted);line-height:1.5">${h.tip}</div><div class="ing-uses">${usedIn.map(r=>`<div class="use-chip" style="background:${CAT_COLORS[r.cat]}15;color:${CAT_COLORS[r.cat]}" onclick="openRecipe(${r.id})">${r.emoji} ${r.name}</div>`).join('')}</div></div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+function init() {
+  document.getElementById('hdate').textContent=new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
+  document.getElementById('htitle').textContent=greeting();
+  document.getElementById('qtext').textContent=Q[S.qi||0];
+  renderWeek(); renderMorning(); renderMeds();
+  renderFitstop(); renderGirlie(); renderMeals();
+  renderHome(); renderTodos(); renderContent();
+  renderFilters(); renderGrid(); renderWeekPlan(); renderShopList();
+}
+init();
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) init(); });
+</script>
+</body>
+</html>
