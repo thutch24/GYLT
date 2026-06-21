@@ -39,9 +39,12 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
 .quote-hint { font-size:11px; color:var(--muted); margin-top:7px; }
 .week-strip { display:flex; gap:5px; margin-bottom:24px; }
 /* HISTORY / CALENDAR */
-.hist-btn { position:absolute; right:0; top:2px; background:none; border:none; font-size:20px; cursor:pointer; padding:4px 6px; border-radius:10px; }
-.hist-btn:active { background:var(--pink-dim); }
-#history-sheet .sheet-inner { max-height:88dvh; overflow-y:auto; padding-bottom:20px; }
+.sheet-overlay { position:fixed; inset:0; background:rgba(80,20,65,.3); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); z-index:300; display:none; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .25s; }
+.sheet-overlay.open { display:flex; opacity:1; pointer-events:all; }
+.sheet-inner { width:100%; background:var(--surface); border-radius:28px 28px 0 0; padding:18px 20px calc(24px + var(--safe-bot)); transform:translateY(110%); transition:transform .38s cubic-bezier(.32,.72,0,1); overflow-y:auto; box-shadow:0 -6px 40px rgba(200,100,180,.12); }
+.sheet-overlay.open .sheet-inner { transform:translateY(0); }
+.sheet-handle { width:36px; height:4px; border-radius:2px; background:var(--border); margin:0 auto 16px; }
+.sheet-title { font-size:18px; font-weight:800; color:var(--text); margin-bottom:16px; }
 .streak-banner { background:linear-gradient(135deg,#fff0f9,#fff9e8); border:1.5px solid rgba(244,114,182,.2); border-radius:18px; padding:16px 20px; margin-bottom:20px; display:flex; align-items:center; gap:16px; }
 .streak-flame { font-size:36px; line-height:1; }
 .streak-num { font-size:36px; font-weight:900; color:var(--pink); line-height:1; }
@@ -235,7 +238,7 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
 .cal-budget-bar { background:var(--surface2); border-radius:12px; padding:10px 14px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; }
 .cal-budget-used { font-size:15px; font-weight:800; }
 .cal-budget-left { font-size:12px; color:var(--muted); }
-.plan-pick-item.over-budget { opacity:.35; pointer-events:none; }
+.plan-pick-item.over-budget { display:none; }
 .plan-pick-item.over-budget::after { content:' — over budget'; font-size:11px; color:#ef4444; }
 .plan-sheet-bg { position:absolute; inset:0; background:rgba(0,0,0,.35); }
 .plan-sheet-card { position:relative; background:var(--bg); border-radius:24px 24px 0 0; padding:0 0 calc(var(--safe-bot)+16px); max-height:80dvh; overflow-y:auto; animation:slideUp .28s cubic-bezier(.22,.61,.36,1) both; }
@@ -363,10 +366,12 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
 <!-- ░░ TODAY PAGE ░░ -->
 <div id="today-page" class="page active">
   <div id="today-inner">
-    <div style="position:relative">
-    <div class="hdate" id="hdate"></div>
-    <div class="htitle" id="htitle">Hey Tessa 🌸</div>
-    <button class="hist-btn" onclick="openHistory()" title="History">📅</button>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div class="hdate" id="hdate"></div>
+        <div class="htitle" id="htitle">Hey Tessa 🌸</div>
+      </div>
+      <button onclick="openHistory()" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;color:var(--text);font-family:inherit;margin-top:calc(var(--safe-top)+4px);white-space:nowrap">📅 History</button>
     </div>
 
     <div class="quote" onclick="nextQuote()">
@@ -416,6 +421,27 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
       <div class="card">
         <button class="meal-ideas-btn" onclick="navToTab('recipes')" style="margin-top:14px">🍳 Open recipe book →</button>
         <div id="meals-card"></div>
+        <!-- MACRO SUMMARY -->
+        <div id="today-macro-bar" style="margin-top:12px"></div>
+        <!-- QUICK LOG -->
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+          <div style="font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.5px;margin-bottom:8px">+ QUICK LOG</div>
+          <div id="quick-log-list" style="margin-bottom:8px"></div>
+          <div id="quick-log-form" style="display:none;background:var(--surface2);border-radius:14px;padding:12px;margin-bottom:8px">
+            <input id="ql-name" placeholder="What did you eat?" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:14px;font-family:inherit;color:var(--text);margin-bottom:8px;box-sizing:border-box">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+              <input id="ql-cal" type="number" placeholder="Cal" style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:8px;font-size:13px;font-family:inherit;color:var(--text);text-align:center;width:100%;box-sizing:border-box">
+              <input id="ql-pro" type="number" placeholder="Prot g" style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:8px;font-size:13px;font-family:inherit;color:var(--text);text-align:center;width:100%;box-sizing:border-box">
+              <input id="ql-carb" type="number" placeholder="Carb g" style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:8px;font-size:13px;font-family:inherit;color:var(--text);text-align:center;width:100%;box-sizing:border-box">
+              <input id="ql-fat" type="number" placeholder="Fat g" style="background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:8px;font-size:13px;font-family:inherit;color:var(--text);text-align:center;width:100%;box-sizing:border-box">
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onclick="submitQuickLog()" style="flex:1;background:var(--pink);color:white;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Add</button>
+              <button onclick="document.getElementById('quick-log-form').style.display='none'" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--muted)">Cancel</button>
+            </div>
+          </div>
+          <button onclick="document.getElementById('quick-log-form').style.display='block';document.getElementById('ql-name').focus()" style="width:100%;background:var(--surface2);border:1.5px dashed var(--border);border-radius:12px;padding:10px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit" id="ql-add-btn">+ Add food</button>
+        </div>
       </div>
     </div>
 
@@ -463,8 +489,8 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
   </div>
   <div class="week-plan" id="week-plan">
     <div class="week-plan-head">
-      <h2>🗓 This week's meals</h2>
-      <span>Tap to choose</span>
+      <h2>📋 Today's meals</h2>
+      <span>Tap to pick</span>
     </div>
     <div class="meal-slot" onclick="openPlanSheet('breakfast')">
       <span class="meal-slot-label" style="color:var(--yel)">Breakfast</span>
@@ -481,10 +507,21 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
       <div class="meal-slot-content" id="slot-dinner"><div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div></div>
       <span class="meal-slot-ico" id="slot-dinner-ico">➕</span>
     </div>
+    <div class="meal-slot" id="slot-snack-1-row" onclick="openPlanSheet('snack1')">
+      <span class="meal-slot-label" style="color:#a855f7">Snack 1</span>
+      <div class="meal-slot-content" id="slot-snack1"><div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div></div>
+      <span class="meal-slot-ico" id="slot-snack1-ico">➕</span>
+    </div>
+    <div class="meal-slot" id="slot-snack-2-row" onclick="openPlanSheet('snack2')">
+      <span class="meal-slot-label" style="color:#a855f7">Snack 2</span>
+      <div class="meal-slot-content" id="slot-snack2"><div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div></div>
+      <span class="meal-slot-ico" id="slot-snack2-ico">➕</span>
+    </div>
+  <div id="plan-total-bar" style="padding:12px 16px;background:var(--surface2);border-radius:14px;margin-top:10px"></div>
   </div>
   <div class="cal-banner">
     <div style="font-size:18px">📊</div>
-    <div class="cal-banner-text"><strong>~1800 cal/day</strong> · 55g+ fat · 130g+ protein · Snack daily</div>
+    <div class="cal-banner-text"><strong>~1600 cal/day</strong> · 55g+ fat · 120g+ protein · Snack daily</div>
   </div>
   <div class="filter-row" id="filter-row"></div>
   <div class="recipe-grid" id="recipe-grid"></div>
@@ -529,16 +566,20 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
     <button class="qa-btn qa-btn-b" onclick="confirmQuickAdd('breakfast')">🌅 Breakfast</button>
     <button class="qa-btn qa-btn-l" onclick="confirmQuickAdd('lunch')">☀️ Lunch</button>
     <button class="qa-btn qa-btn-d" onclick="confirmQuickAdd('dinner')">🌙 Dinner</button>
+    <button class="qa-btn" style="background:#faf5ff;color:#7c3aed" onclick="confirmQuickAdd('snack1')">🍎 Snack 1</button>
+    <button class="qa-btn" style="background:#faf5ff;color:#7c3aed" onclick="confirmQuickAdd('snack2')">🍫 Snack 2</button>
     <button class="qa-cancel" onclick="closeQuickAdd()">Cancel</button>
   </div>
 </div>
 
 
-<!-- ░░ HISTORY SHEET ░░ -->
-<div class="sheet-overlay" id="history-sheet" onclick="sheetBgClose(event,'history-sheet')">
-  <div class="sheet-inner">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">History</div>
+<!-- ░░ HISTORY PAGE ░░ -->
+<div id="history-page" class="page">
+  <div style="padding:0 20px 100px">
+    <div style="display:flex;align-items:center;gap:12px;padding-top:calc(var(--safe-top)+8px);margin-bottom:20px">
+      <button onclick="goBackFromHistory()" style="background:none;border:none;color:var(--pink);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;padding:0">← Back</button>
+      <h1 style="font-size:22px;font-weight:800;margin:0;flex:1">History 📅</h1>
+    </div>
     <div id="streak-area"></div>
     <div class="cal-nav">
       <button class="cal-nav-btn" onclick="calPrev()">‹</button>
@@ -1448,11 +1489,12 @@ function isFav(id) { return getFavs().includes(id); }
 function toggleFav(id) { let a=getFavs(); a.includes(id)?a.splice(a.indexOf(id),1):a.push(id); saveFavs(a); }
 
 function getPlan() {
-  const stored=JSON.parse(localStorage.getItem('recipe_plan')||'{}');
-  if(stored.week!==weekKey()) return {week:weekKey()};
+  const stored=JSON.parse(localStorage.getItem('recipe_plan_v2')||'{}');
+  const today=td();
+  if(stored.date!==today) return {date:today,breakfast:null,lunch:null,dinner:null,snacks:[]};
   return stored;
 }
-function savePlan(p) { p.week=weekKey(); localStorage.setItem('recipe_plan',JSON.stringify(p)); }
+function savePlan(p) { p.date=td(); localStorage.setItem('recipe_plan_v2',JSON.stringify(p)); }
 
 let planPickingCat=null;
 
@@ -1474,14 +1516,15 @@ function confirmQuickAdd(cat) {
   if (r) {
     const m = getPlannedMacros(cat);
     const warnings = [];
-    if (m.cal + (r.cal||0) > TARGETS.cal + BUFFERS.cal) warnings.push((m.cal+(r.cal||0)-TARGETS.cal)+' cal over');
-    if (m.fat + (r.fat||0) > TARGETS.fat + BUFFERS.fat) warnings.push(((m.fat+(r.fat||0)-TARGETS.fat).toFixed(0))+'g fat over');
+    if (m.cal   + (r.cal||0)   > TARGETS.cal   + BUFFERS.cal)   warnings.push((m.cal+(r.cal||0)-TARGETS.cal)+' cal over');
+    if (m.carbs + (r.carbs||0) > TARGETS.carbs + BUFFERS.carbs) warnings.push((m.carbs+(r.carbs||0)-TARGETS.carbs)+'g carbs over');
+    if (m.fat   + (r.fat||0)   > TARGETS.fat   + BUFFERS.fat)   warnings.push(((m.fat+(r.fat||0)-TARGETS.fat).toFixed(0))+'g fat over');
     if (warnings.length && !confirm(r.name + ' would put you ' + warnings.join(' and ') + ' for the day. Add anyway?')) {
       closeQuickAdd(); return;
     }
   }
   const plan=getPlan(); plan[cat]=_qaId; savePlan(plan);
-  renderWeekPlan(); renderShopList();
+  renderWeekPlan(); renderShopList(); renderQuickLog(); renderTodayMacroBar();
   closeQuickAdd();
 }
 function closeQuickAdd() {
@@ -1493,19 +1536,22 @@ function closeQuickAdd() {
 //  PLAN SHEET
 // ═══════════════════════════════════════════════
 // ── Macro targets (with buffers) ──────────────────
-const TARGETS = { cal: 1600, protein: 120, fat: 55 };
-const BUFFERS = { cal: 150, protein: 15, fat: 10 };
+const TARGETS = { cal: 1600, protein: 120, fat: 55, carbs: 156 };
+const BUFFERS = { cal: 150, protein: 15, fat: 10, carbs: 20 };
 
 function getPlannedMacros(excludeCat) {
   const plan = getPlan();
-  let cal=0, protein=0, fat=0;
-  ['breakfast','lunch','dinner'].forEach(c => {
+  let cal=0, protein=0, fat=0, carbs=0;
+  ['breakfast','lunch','dinner','snack1','snack2'].forEach(c => {
     if (c !== excludeCat && plan[c]) {
       const r = RECIPES.find(x => x.id === plan[c]);
-      if (r) { cal += r.cal||0; protein += r.protein||0; fat += r.fat||0; }
+      if (r) { cal += r.cal||0; protein += r.protein||0; fat += r.fat||0; carbs += r.carbs||0; }
     }
   });
-  return { cal, protein, fat };
+  // Add quick-log extras
+  const extras = (S.extras && S.extras[td()]) || [];
+  extras.forEach(e => { cal+=e.cal||0; protein+=e.protein||0; fat+=e.fat||0; carbs+=e.carbs||0; });
+  return { cal, protein, fat, carbs };
 }
 // Legacy helper kept for confirmQuickAdd
 function getPlannedCals(excludeCat) { return getPlannedMacros(excludeCat).cal; }
@@ -1518,38 +1564,42 @@ function macroBar(used, target, unit, color) {
 
 function openPlanSheet(cat) {
   planPickingCat=cat;
-  const labels={breakfast:'🌅 Pick your breakfast',lunch:'☀️ Pick your lunch',dinner:'🌙 Pick your dinner'};
+  const labels={breakfast:'🌅 Pick your breakfast',lunch:'☀️ Pick your lunch',dinner:'🌙 Pick your dinner',snack1:'🍎 Pick snack 1',snack2:'🍫 Pick snack 2'};
   document.getElementById('plan-sheet-title').textContent=labels[cat];
   const m = getPlannedMacros(cat);
   const calLeft = TARGETS.cal + BUFFERS.cal - m.cal;
   const fatLeft = TARGETS.fat + BUFFERS.fat - m.fat;
   const proteinNeeded = Math.max(0, TARGETS.protein - BUFFERS.protein - m.protein);
-  const recipes = RECIPES.filter(r=>r.cat===cat);
+  const recipeCat = (cat==='snack1'||cat==='snack2') ? 'snack' : cat;
+  const recipes = RECIPES.filter(r=>r.cat===recipeCat);
 
   const budgetHtml = `<div class="cal-budget-bar" style="flex-direction:column;gap:8px;align-items:stretch">
     <div style="font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.4px">TODAY'S MACROS</div>
-    <div style="display:flex;gap:10px">
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
       ${macroBar(m.cal, TARGETS.cal, 'cal', 'var(--pink)')}
       ${macroBar(m.protein, TARGETS.protein, 'g p', 'var(--green)')}
+      ${macroBar(m.carbs, TARGETS.carbs, 'g c', '#3b82f6')}
       ${macroBar(m.fat, TARGETS.fat, 'g f', '#f59e0b')}
     </div>
-    <div style="font-size:11px;color:var(--muted)">${calLeft} cal · ${fatLeft}g fat remaining · need ${proteinNeeded}g more protein</div>
+    <div style="font-size:11px;color:var(--muted)">
+      ${TARGETS.cal+BUFFERS.cal-m.cal} cal · ${TARGETS.carbs+BUFFERS.carbs-m.carbs}g carbs · ${TARGETS.fat+BUFFERS.fat-m.fat}g fat remaining
+      ${m.protein < TARGETS.protein - BUFFERS.protein ? '· need '+(TARGETS.protein-m.protein)+'g more protein' : '· ✓ protein good'}
+    </div>
   </div>`;
 
   document.getElementById('plan-sheet-list').innerHTML = budgetHtml + recipes.map(r=>{
-    const projCal = m.cal + (r.cal||0);
-    const projFat = m.fat + (r.fat||0);
-    const overCal = projCal > TARGETS.cal + BUFFERS.cal;
-    const overFat = projFat > TARGETS.fat + BUFFERS.fat;
-    const isOver = overCal || overFat;
-    const warnings = [];
-    if (overCal) warnings.push((projCal - TARGETS.cal) + ' cal over');
-    if (overFat) warnings.push((projFat - TARGETS.fat).toFixed(0) + 'g fat over');
+    const projCal   = m.cal   + (r.cal||0);
+    const projFat   = m.fat   + (r.fat||0);
+    const projCarbs = m.carbs + (r.carbs||0);
+    const overCal   = projCal   > TARGETS.cal   + BUFFERS.cal;
+    const overFat   = projFat   > TARGETS.fat   + BUFFERS.fat;
+    const overCarbs = projCarbs > TARGETS.carbs + BUFFERS.carbs;
+    const isOver    = overCal || overFat || overCarbs;
     return `<div class="plan-pick-item${isOver?' over-budget':''}" onclick="selectPlanMeal(${r.id})">
       <span class="plan-pick-emoji">${r.emoji}</span>
       <div style="flex:1">
         <div class="plan-pick-name">${r.name}</div>
-        <div class="plan-pick-meta">🥩 ${r.protein}g · 🧈 ${r.fat}g fat · ${r.cal} cal${warnings.length?' · <span style=\'color:#ef4444\'>' + warnings.join(', ') + '</span>':''}</div>
+        <div class="plan-pick-meta">🔥 ${r.cal} cal · 🥩 ${r.protein}g · 🌾 ${r.carbs}g · 🧈 ${r.fat}g fat</div>
       </div>
     </div>`;
   }).join('');
@@ -1563,8 +1613,17 @@ function selectPlanMeal(id) {
   closePlanSheet(); renderWeekPlan(); renderShopList();
 }
 
+function miniMacro(used, target, unit, color) {
+  const pct = Math.min(100, Math.round(used/target*100));
+  const over = used > target * 1.1;
+  return `<div style="background:var(--surface);border-radius:10px;padding:8px 10px">
+    <div style="font-size:13px;font-weight:800;color:${over?'#ef4444':color}">${used}<span style="font-size:10px;font-weight:600;color:var(--muted)"> / ${target}${unit}</span></div>
+    <div style="height:4px;border-radius:2px;background:var(--surface2);margin-top:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${over?'#ef4444':color};border-radius:2px"></div></div>
+  </div>`;
+}
 function renderWeekPlan() {
   const plan=getPlan();
+  // Main meals
   ['breakfast','lunch','dinner'].forEach(cat=>{
     const id=plan[cat];
     const slotEl=document.getElementById('slot-'+cat);
@@ -1572,15 +1631,46 @@ function renderWeekPlan() {
     if(id) {
       const r=RECIPES.find(x=>x.id===id);
       if(r) {
-        slotEl.innerHTML=`<div class="meal-slot-name">${r.name}</div><div class="meal-slot-sub">${r.protein}g protein · ${r.cal} cal</div>`;
+        slotEl.innerHTML=`<div class="meal-slot-name">${r.name}</div><div class="meal-slot-sub">${r.protein}g protein · ${r.cal} cal <button class="meal-slot-clear" onclick="event.stopPropagation();clearPlanMeal('${cat}')">✕</button></div>`;
         icoEl.textContent=r.emoji;
-        slotEl.parentElement.onclick=(e)=>{ if(e.target.classList.contains('meal-slot-clear')){ e.stopPropagation(); clearPlanMeal(cat); } else { openPlanSheet(cat); } };
+        slotEl.parentElement.onclick=(e)=>{ if(!e.target.classList.contains('meal-slot-clear')) openPlanSheet(cat); };
       }
     } else {
       slotEl.innerHTML=`<div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div>`;
       icoEl.textContent='➕';
+      slotEl.parentElement.onclick=()=>openPlanSheet(cat);
     }
   });
+  // Snacks
+  ['snack1','snack2'].forEach((cat,i)=>{
+    const id=plan[cat];
+    const slotEl=document.getElementById('slot-'+cat);
+    const icoEl=document.getElementById('slot-'+cat+'-ico');
+    if(id) {
+      const r=RECIPES.find(x=>x.id===id);
+      if(r) {
+        slotEl.innerHTML=`<div class="meal-slot-name">${r.name}</div><div class="meal-slot-sub">${r.protein}g protein · ${r.cal} cal <button class="meal-slot-clear" onclick="event.stopPropagation();clearPlanMeal('${cat}')">✕</button></div>`;
+        icoEl.textContent=r.emoji;
+        slotEl.parentElement.onclick=(e)=>{ if(!e.target.classList.contains('meal-slot-clear')) openPlanSheet(cat); };
+      }
+    } else {
+      slotEl.innerHTML=`<div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div>`;
+      icoEl.textContent='➕';
+      slotEl.parentElement.onclick=()=>openPlanSheet(cat);
+    }
+  });
+  // Daily macro totals
+  const m = getPlannedMacros(null);
+  const totalBar = document.getElementById('plan-total-bar');
+  if (totalBar) {
+        totalBar.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${miniMacro(m.cal,1600,'cal','var(--pink)')}
+        ${miniMacro(m.protein,120,'g protein','var(--green)')}
+        ${miniMacro(m.carbs,156,'g carbs','#3b82f6')}
+        ${miniMacro(m.fat,55,'g fat','#f59e0b')}
+      </div>`;
+  }
 }
 function clearPlanMeal(cat) { const plan=getPlan(); delete plan[cat]; savePlan(plan); renderWeekPlan(); renderShopList(); }
 
@@ -1707,6 +1797,67 @@ function renderShop() {
 }
 
 
+
+// ═══════════════════════════════════════════════
+//  QUICK LOG
+// ═══════════════════════════════════════════════
+function getExtras() { return (S.extras && S.extras[td()]) || []; }
+function saveExtras(arr) { if(!S.extras) S.extras={}; S.extras[td()]=arr; save(); }
+
+function submitQuickLog() {
+  const name = document.getElementById('ql-name').value.trim() || 'Food';
+  const cal  = parseFloat(document.getElementById('ql-cal').value)  || 0;
+  const protein = parseFloat(document.getElementById('ql-pro').value)  || 0;
+  const carbs = parseFloat(document.getElementById('ql-carb').value) || 0;
+  const fat  = parseFloat(document.getElementById('ql-fat').value)  || 0;
+  if (!cal && !protein && !carbs && !fat) return;
+  const extras = getExtras();
+  extras.push({ name, cal, protein, carbs, fat, id: Date.now() });
+  saveExtras(extras);
+  // Reset form
+  ['ql-name','ql-cal','ql-pro','ql-carb','ql-fat'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('quick-log-form').style.display='none';
+  renderQuickLog();
+  renderTodayMacroBar();
+}
+
+function deleteQuickLog(id) {
+  saveExtras(getExtras().filter(e=>e.id!==id));
+  renderQuickLog();
+  renderTodayMacroBar();
+}
+
+function renderQuickLog() {
+  const extras = getExtras();
+  const el = document.getElementById('quick-log-list');
+  if (!el) return;
+  if (extras.length === 0) { el.innerHTML=''; return; }
+  el.innerHTML = extras.map(e=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700">${e.name}</div>
+        <div style="font-size:11px;color:var(--muted)">${e.cal} cal · ${e.protein}g prot · ${e.carbs}g carb · ${e.fat}g fat</div>
+      </div>
+      <button onclick="deleteQuickLog(${e.id})" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 4px">✕</button>
+    </div>`).join('');
+}
+
+function renderTodayMacroBar() {
+  const el = document.getElementById('today-macro-bar');
+  if (!el) return;
+  const m = getPlannedMacros(null);
+  if (m.cal === 0 && m.protein === 0) { el.innerHTML=''; return; }
+  el.innerHTML = `<div style="background:var(--surface2);border-radius:14px;padding:12px">
+    <div style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.5px;margin-bottom:8px">TODAY'S MACROS</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      ${miniMacro(m.cal,1600,'cal','var(--pink)')}
+      ${miniMacro(m.protein,120,'g protein','var(--green)')}
+      ${miniMacro(m.carbs,156,'g carbs','#3b82f6')}
+      ${miniMacro(m.fat,55,'g fat','#f59e0b')}
+    </div>
+  </div>`;
+}
+
 // ═══════════════════════════════════════════════
 //  HISTORY + CALENDAR
 // ═══════════════════════════════════════════════
@@ -1716,9 +1867,19 @@ function openHistory() {
   const now = new Date();
   calYear = now.getFullYear();
   calMonth = now.getMonth();
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('history-page').classList.add('active');
   renderStreak();
   renderCal();
-  openSheet('history-sheet');
+  window.scrollTo(0,0);
+}
+function goBackFromHistory() {
+  document.getElementById('history-page').classList.remove('active');
+  document.getElementById('today-page').classList.add('active');
+  const tabEl = document.querySelector('[data-tab="today"]');
+  if (tabEl) tabEl.classList.add('active');
+  window.scrollTo(0,0);
 }
 
 function calPrev() {
