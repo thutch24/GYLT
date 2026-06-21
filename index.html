@@ -1025,14 +1025,7 @@ function renderContent() {
 // ═══════════════════════════════════════════════
 //  WEEK STRIP
 // ═══════════════════════════════════════════════
-function renderWeek() {
-  const days=weekDays(),today=td(),lbls=['M','T','W','T','F','S','S'];
-  document.getElementById('wstrip').innerHTML=days.map((d,i)=>{
-    const fit=S.fitstop[d],girl=S.girlie[d],ml=S.meals[d],mDone=ml&&Object.values(ml).some(Boolean);
-    let pip=''; if(fit)pip+='💗'; if(girl)pip+='🎀'; if(mDone)pip+='🌿';
-    return `<div class="wd ${d===today?'today':''}" style="${d>today?'opacity:.35':''}"><div class="wd-lbl">${lbls[i]}</div><div class="wd-pip">${pip||'·'}</div></div>`;
-  }).join('');
-}
+function renderWeek() { /* week strip removed */ }
 
 // ═══════════════════════════════════════════════
 //  SHEET + CELEBRATION
