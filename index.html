@@ -227,10 +227,10 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
 #quick-add-sheet { position:fixed; inset:0; z-index:600; display:none; align-items:flex-end; }
 #quick-add-sheet.open { display:flex; }
 #quick-add-bg { position:absolute; inset:0; background:rgba(0,0,0,.35); }
-#quick-add-box { position:relative; background:var(--bg); border-radius:24px 24px 0 0; width:100%; padding:24px 20px calc(var(--safe-bot,0px)+20px); animation:slideUp .25s ease; }
-#quick-add-title { font-size:17px; font-weight:800; margin-bottom:4px; }
-#quick-add-sub { font-size:14px; color:var(--muted); margin-bottom:20px; }
-.qa-btn { width:100%; padding:14px; border-radius:16px; border:none; font-size:15px; font-weight:700; cursor:pointer; margin-bottom:10px; }
+#quick-add-box { position:relative; background:var(--bg); border-radius:24px 24px 0 0; width:100%; padding:28px 22px calc(var(--safe-bot,0px)+24px); box-sizing:border-box; animation:slideUp .25s ease; }
+#quick-add-title { font-size:18px; font-weight:800; margin-bottom:6px; }
+#quick-add-sub { font-size:14px; color:var(--muted); margin-bottom:22px; font-weight:500; }
+.qa-btn { width:100%; padding:15px; border-radius:16px; border:none; font-size:15px; font-weight:700; cursor:pointer; margin-bottom:10px; font-family:inherit; }
 .qa-btn-b { background:#fff9e8; color:#b45309; }
 .qa-btn-l { background:#f0fdf4; color:#15803d; }
 .qa-btn-d { background:#f0f9ff; color:#0369a1; }
@@ -523,6 +523,52 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
     <div style="font-size:18px">📊</div>
     <div class="cal-banner-text"><strong>~1600 cal/day</strong> · 55g+ fat · 120g+ protein · Snack daily</div>
   </div>
+  <div style="margin-top:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h2 style="font-size:16px;font-weight:800;margin:0">✨ Ready-Made Plans</h2>
+      <span style="font-size:11px;color:var(--muted);font-weight:600">Tap to load all meals</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px" id="preset-plans">
+      <!-- Volume tip banner -->
+      <div style="background:rgba(59,130,246,.08);border:1.5px solid rgba(59,130,246,.15);border-radius:14px;padding:12px 14px;margin-bottom:4px;font-size:12px;color:#2563eb;font-weight:600;line-height:1.6">
+        💡 <strong>High volume, low cal:</strong> all plans use big portions of lean protein + slow-digesting carbs to keep you full. Bulk any meal up with frozen spinach, cucumber or zucchini for zero extra calories.
+      </div>
+      <!-- Plan 1 -->
+      <div style="background:linear-gradient(135deg,#fff0f9,#fff5fe);border:1.5px solid rgba(244,114,182,.2);border-radius:18px;padding:16px;cursor:pointer" onclick="loadPlan(0)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div><div style="font-size:14px;font-weight:800">🍫 The Choc & Cheese Plan</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Huge portions · sweet treat included</div></div>
+          <div style="text-align:right"><div style="font-size:13px;font-weight:800;color:var(--pink)">1460 cal</div><div style="font-size:10px;color:var(--muted)">163g protein</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.9">
+          🌅 Baked Protein Pancake Bowl · ☀️ Cottage Cheese Taco Dip · 🌙 Turkey Mince Stir Fry Bowl · 🍫 Choc Protein Mousse · 🍮 Protein Mug Cake
+        </div>
+        <div style="margin-top:8px;font-size:10px;font-weight:700;color:var(--pink)">TAP TO LOAD →</div>
+      </div>
+      <!-- Plan 2 -->
+      <div style="background:linear-gradient(135deg,#f0fdf4,#f5fff8);border:1.5px solid rgba(82,201,135,.2);border-radius:18px;padding:16px;cursor:pointer" onclick="loadPlan(1)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div><div style="font-size:14px;font-weight:800">🐟 The Meal Prep Bowl Plan</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Big bowls · zero decision fatigue</div></div>
+          <div style="text-align:right"><div style="font-size:13px;font-weight:800;color:var(--green)">1610 cal</div><div style="font-size:10px;color:var(--muted)">159g protein</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.9">
+          🌅 Berry Protein Smoothie Bowl · ☀️ Tuna, Avo & Feta Rice Bowl · 🌙 High-Protein Turkey Bolognese · 🍫 Choc Protein Mousse
+        </div>
+        <div style="margin-top:8px;font-size:10px;font-weight:700;color:var(--green)">TAP TO LOAD →</div>
+      </div>
+      <!-- Plan 3 -->
+      <div style="background:linear-gradient(135deg,#fffbeb,#fff9e0);border:1.5px solid rgba(245,158,11,.2);border-radius:18px;padding:16px;cursor:pointer" onclick="loadPlan(2)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div><div style="font-size:14px;font-weight:800">🌯 The Lazy Girl Plan</div><div style="font-size:11px;color:var(--muted);margin-top:2px">5 min meals · Tim Tams included</div></div>
+          <div style="text-align:right"><div style="font-size:13px;font-weight:800;color:#f59e0b">1560 cal</div><div style="font-size:10px;color:var(--muted)">161g protein</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.9">
+          🌅 Protein French Toast · ☀️ Rotisserie Chicken Caesar Wrap · 🌙 Chicken Fajita Bowl · 🥛 Tim Tam Protein Shake · 🍫 Choc Protein Mousse
+        </div>
+        <div style="margin-top:8px;font-size:10px;font-weight:700;color:#f59e0b">TAP TO LOAD →</div>
+      </div>
+    </div>
+  </div>
+  <div style="height:1px;background:var(--border);margin:20px 0"></div>
   <div class="filter-row" id="filter-row"></div>
   <div class="recipe-grid" id="recipe-grid"></div>
   </div>
@@ -1278,16 +1324,17 @@ const RECIPES=[
    method:['Mix yoghurt crema ingredients together and set aside.','Heat a pan on HIGH. Toss capsicum and onion with olive oil and fajita seasoning. Cook 4–5 min until slightly charred.','Add shredded chicken to the pan and toss 1–2 min just to warm through.','Microwave rice cups 90 seconds.','Bowl it up: rice base, fajita mix on top, yoghurt crema drizzled over.'],
    tip:'The capsicum + onion is the only real cooking here — everything else is assembly. Cauliflower rice (4 min microwave) cuts carbs if you want a lighter option.',also:[7,11]},
 
-  {id:17,cat:'snack',emoji:'🍎',viral:false,
-   name:'Apple & Almond Butter',source:'Classic · grab and go',time:'2 min',servings:1,
-   cal:230,protein:5,carbs:28,fat:12,
+  {id:17,cat:'snack',emoji:'🍫',viral:true,mealprep:false,
+   name:'Chocolate Protein Mousse',source:'TikTok viral · high protein',time:'5 min',servings:1,
+   cal:185,protein:26,carbs:12,fat:4,
    ingredients:[
-     {qty:'1 large',item:'Apple (any variety)',brand:'Pink Lady or Fuji — buy a bag'},
-     {qty:'2 tbsp',item:'Almond butter or peanut butter',brand:"Pics Peanut Butter (no added sugar) or Mayver's Almond Butter"},
+     {qty:'1 scoop (30g)',item:'Chocolate whey protein powder',brand:'Optimum Nutrition Gold Standard Double Chocolate'},
+     {qty:'150g',item:'0% Greek yoghurt',brand:'Chobani Plain 0%'},
+     {qty:'2 tbsp',item:'Reduced-fat milk chocolate drinking powder',brand:'Milo or Nesquik'},
+     {qty:'Splash',item:'Milk',brand:''},
    ],
-   method:['Slice the apple.','Dip in nut butter.'],
-   tip:"Keep a jar of Pics peanut butter in the pantry. Apple + nut butter is 12g fat and keeps you full for hours. The best 'I need something now' snack.",also:[4]},
-
+   method:['Mix protein powder into yoghurt until smooth.','Stir in drinking chocolate powder.','Add a tiny splash of milk if too thick — should be mousse-like.','Eat with a spoon straight from the bowl or chill for 10 min.'],
+   tip:'Use Nesquik chocolate powder for a sweeter milk chocolate flavour. Top with a few milk choc chips for extra treat vibes.',also:[20,18]}
   {id:18,cat:'snack',emoji:'🫐',viral:false,
    name:'Berry & Yoghurt Bowl',source:'Refreshing · 2 min',time:'2 min',servings:1,
    cal:210,protein:18,carbs:24,fat:5,
@@ -1326,33 +1373,42 @@ const RECIPES=[
    method:['Mix yoghurt, protein powder and honey until smooth.','Spread about 5mm thick on a lined baking tray or flat container.','Scatter chocolate chips and berries over the top.','Freeze at least 20 min until firm. Break into pieces.','Store in the freezer — grab a piece when you want something sweet.'],
    tip:"Make a double batch — keeps in the freezer for 2 weeks. This is the 'I want dessert but I'm trying' snack.",also:[1,4]},
 
-  {id:21,cat:'snack',emoji:'🥭',viral:false,
-   name:'Mango & Mixed Nuts',source:'No prep · grab and go',time:'1 min',servings:1,
-   cal:280,protein:6,carbs:28,fat:16,
+  {id:21,cat:'snack',emoji:'🍪',viral:true,mealprep:true,
+   name:'No-Bake Choc Cookie Dough Bites',source:'TikTok viral · protein snacks',time:'10 min + chill',servings:8,
+   cal:195,protein:14,carbs:18,fat:7,
    ingredients:[
-     {qty:'1 medium',item:'Fresh mango (or 1 cup frozen mango, thawed)',brand:'Woolies has fresh mangoes in season — Creative Gourmet frozen any time'},
-     {qty:'30g',item:'Mixed nuts',brand:'Woolies Mixed Nuts (unsalted)'},
+     {qty:'2 scoops (60g)',item:'Vanilla whey protein powder',brand:'Optimum Nutrition Gold Standard Vanilla'},
+     {qty:'3 tbsp',item:'Peanut butter (smooth)',brand:'Sanitarium Natural or Bega Be Natural'},
+     {qty:'4 tbsp',item:'Rolled oats',brand:"Carman's"},
+     {qty:'2 tbsp',item:'Milk chocolate chips',brand:'Nestle Baking Choc Bits (Milk)'},
+     {qty:'2 tbsp',item:'Honey',brand:'Capilano'},
+     {qty:'2-3 tbsp',item:'Milk (to bind)',brand:''},
    ],
-   method:['Slice the mango (or thaw frozen mango chunks).','Grab a handful of nuts.','Done.'],
-   tip:'Pre-portion nuts into 30g serves at the start of the week. Mango + nuts = fat + fruit + satisfaction.',also:[4]},
-
-  {id:22,cat:'snack',emoji:'🍊',viral:false,
-   name:'Fruit Plate',source:'Zero prep · refreshing',time:'2 min',servings:1,
-   cal:130,protein:2,carbs:32,fat:0,
+   method:['Mix protein, peanut butter, oats, honey and milk choc chips in a bowl.','Add milk a tablespoon at a time until mixture comes together like dough.','Roll into 8 balls. Place on a tray lined with baking paper.','Refrigerate 30 min to firm up. Keep in an airtight container in the fridge for up to 5 days.'],
+   tip:'Meal prep a batch Sunday night. Milk choc chips only — way better than dark. Press an extra choc chip on top before chilling.',also:[17,20]}
+  {id:22,cat:'snack',emoji:'🥛',viral:false,mealprep:false,
+   name:'Tim Tam Protein Shake',source:'The ultimate lazy treat',time:'2 min',servings:1,
+   cal:295,protein:27,carbs:26,fat:8,
    ingredients:[
-     {qty:'Any 2 pieces or 1 cup',item:'Seasonal fruit — whatever looks good',brand:'Oranges, mandarins, grapes, strawberries, watermelon, kiwi, stone fruit'},
+     {qty:'1 scoop (30g)',item:'Chocolate whey protein powder',brand:'Optimum Nutrition Gold Standard Double Chocolate'},
+     {qty:'250ml',item:'Reduced fat milk',brand:'Pauls or Woolies Full Cream (your call)'},
+     {qty:'2 biscuits',item:'Tim Tams (Original)',brand:'Arnotts Original Tim Tams'},
    ],
-   method:['Cut it up.','Eat it.'],
-   tip:"Buy whatever's on special and in season. A fruit plate with a handful of nuts = a balanced snack with fat, fibre and natural sugar.",also:[4]},
-
-  {id:23,cat:'snack',emoji:'🍫',viral:false,
-   name:'Dark Chocolate (daily ritual)',source:'Non-negotiable · built in',time:'0 min',servings:1,
-   cal:120,protein:2,carbs:10,fat:9,
+   method:['Shake protein with milk in a shaker bottle until smooth.','Pour into a glass.','Eat the 2 Tim Tams alongside the shake — do not crush them in, that is a crime.'],
+   tip:'This is your IIFYM moment. Two Tim Tams + a protein shake fits your macros and tastes like dessert. You deserve it.',also:[17,21]}
+  {id:23,cat:'snack',emoji:'🍮',viral:false,mealprep:true,
+   name:'Protein Mug Cake',source:'2-minute microwave magic',time:'5 min',servings:1,
+   cal:225,protein:28,carbs:16,fat:5,
    ingredients:[
-     {qty:'20–25g (3–4 squares)',item:'Dark chocolate 70%+',brand:'Lindt 70% Dark (Excellence bar, Woolies/Coles) — or 85% if you like more intense'},
+     {qty:'1 scoop (30g)',item:'Chocolate whey protein powder',brand:'Optimum Nutrition Gold Standard Double Chocolate'},
+     {qty:'1',item:'Large egg',brand:'Free range'},
+     {qty:'2 tbsp',item:'Reduced-fat milk',brand:''},
+     {qty:'1 tbsp',item:'Unsweetened cocoa powder',brand:'Cadbury Bournville'},
+     {qty:'½ tsp',item:'Baking powder',brand:''},
+     {qty:'1 tbsp',item:'Milk chocolate chips (to top)',brand:'Nestle Baking Choc Bits (Milk)'},
    ],
-   method:['Break off 3–4 squares.','Eat slowly and actually enjoy it.'],
-   tip:"This is not a cheat. This is intentional. 70%+ dark chocolate is ~9g fat and ~2g protein, takes the edge off sugar cravings. Buy one bar a week, make it last.",also:[20]},
+   method:['Mix protein powder, egg, milk, cocoa and baking powder in a large mug until smooth — no lumps.','Microwave on HIGH for 60–75 seconds. It should spring back when you press the top.','Scatter milk chocolate chips on top immediately so they melt.','Let sit 1 minute before eating — it will be very hot.'],
+   tip:'Don't overcook or it goes rubbery. 60 sec in most microwaves is plenty. Tastes like a warm brownie. Milk choc chips only — much better.',also:[17,22]}
   {id:24,cat:'dinner',emoji:'🥘',viral:true,mealprep:true,
    name:'Glass Bowl Chicken & Chorizo Orzo Bake',source:'TikTok viral · glass bowl meal prep trend',time:'5 min prep · 35 min oven',servings:4,
    cal:540,protein:52,carbs:46,fat:14,
@@ -1536,7 +1592,7 @@ function closeQuickAdd() {
 //  PLAN SHEET
 // ═══════════════════════════════════════════════
 // ── Macro targets (with buffers) ──────────────────
-const TARGETS = { cal: 1600, protein: 120, fat: 55, carbs: 156 };
+const TARGETS = { cal: 1600, protein: 140, fat: 55, carbs: 136 };
 const BUFFERS = { cal: 150, protein: 15, fat: 10, carbs: 20 };
 
 function getPlannedMacros(excludeCat) {
@@ -1797,6 +1853,31 @@ function renderShop() {
 }
 
 
+
+
+// ═══════════════════════════════════════════════
+//  PRESET MEAL PLANS
+// ═══════════════════════════════════════════════
+const PRESET_PLANS = [
+  { breakfast:28, lunch:9,  dinner:13, snack1:17, snack2:23 }, // Choc & Cheese
+  { breakfast:4,  lunch:8,  dinner:14, snack1:17, snack2:null }, // Meal Prep Bowls
+  { breakfast:2,  lunch:10, dinner:16, snack1:22, snack2:17 }, // Lazy Girl
+];
+function loadPlan(idx) {
+  const p = PRESET_PLANS[idx];
+  const plan = getPlan();
+  if (p.breakfast) plan.breakfast = p.breakfast;
+  if (p.lunch)     plan.lunch     = p.lunch;
+  if (p.dinner)    plan.dinner    = p.dinner;
+  if (p.snack1)    plan.snack1    = p.snack1;
+  if (p.snack2)    plan.snack2    = p.snack2;
+  else             delete plan.snack2;
+  savePlan(plan);
+  renderWeekPlan();
+  renderShopList();
+  renderTodayMacroBar();
+  celebrate('✨','Plan loaded!','Scroll up to see your meals 💜');
+}
 
 // ═══════════════════════════════════════════════
 //  QUICK LOG
