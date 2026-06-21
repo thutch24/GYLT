@@ -379,7 +379,6 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
       <div class="quote-hint">tap for a new one ✨</div>
     </div>
 
-    <div class="week-strip" id="wstrip"></div>
 
     <div id="morning-section"></div>
     <div id="meds-section"></div>
@@ -2174,6 +2173,25 @@ function init() {
 }
 init();
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) init(); });
+
+// ═══════════════════════════════════════════════
+//  MIDNIGHT RESET — re-render when date changes
+// ═══════════════════════════════════════════════
+let _lastDate = td();
+function checkDateRollover() {
+  const now = td();
+  if (now !== _lastDate) {
+    _lastDate = now;
+    renderMorning(); renderMeds(); renderHome();
+    renderMeals(); renderFitstop(); renderGirlie();
+    renderWeekPlan(); renderTodayMacroBar(); renderShopList();
+    renderQuickLog(); renderWeek();
+  }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') checkDateRollover();
+});
+setInterval(checkDateRollover, 60000); // also check every minute
 </script>
 </body>
 </html>
