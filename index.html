@@ -691,7 +691,7 @@ function save() {
   });
 }
 function uid()  { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
-function td()   { return new Date().toISOString().slice(0,10); }
+function td()   { const d=new Date(Date.now()+10*3600000); return d.toISOString().slice(0,10); }
 function weekKey() {
   const d=new Date(); d.setHours(0,0,0,0);
   d.setDate(d.getDate()-((d.getDay()+6)%7));
