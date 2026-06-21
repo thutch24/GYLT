@@ -490,7 +490,7 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
   <div class="week-plan" id="week-plan">
     <div class="week-plan-head">
       <h2>📋 Today's meals</h2>
-      <span>Tap to pick</span>
+      <button onclick="clearAllMeals()" style="background:none;border:none;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;padding:2px 0">Clear all</button>
     </div>
     <div class="meal-slot" onclick="openPlanSheet('breakfast')">
       <span class="meal-slot-label" style="color:var(--yel)">Breakfast</span>
@@ -1593,7 +1593,7 @@ function closeQuickAdd() {
 // ═══════════════════════════════════════════════
 // ── Macro targets (with buffers) ──────────────────
 const TARGETS = { cal: 1600, protein: 140, fat: 55, carbs: 136 };
-const BUFFERS = { cal: 150, protein: 15, fat: 10, carbs: 20 };
+const BUFFERS = { cal: 100, protein: 15, fat: 10, carbs: 20 };
 
 function getPlannedMacros(excludeCat) {
   const plan = getPlan();
@@ -1689,7 +1689,7 @@ function renderWeekPlan() {
       if(r) {
         slotEl.innerHTML=`<div class="meal-slot-name">${r.name}</div><div class="meal-slot-sub">${r.protein}g protein · ${r.cal} cal <button class="meal-slot-clear" onclick="event.stopPropagation();clearPlanMeal('${cat}')">✕</button></div>`;
         icoEl.textContent=r.emoji;
-        slotEl.parentElement.onclick=(e)=>{ if(!e.target.classList.contains('meal-slot-clear')) openPlanSheet(cat); };
+        slotEl.parentElement.onclick=(e)=>{ if(e.target.classList.contains('meal-slot-clear')) return; openRecipe(r.id); };
       }
     } else {
       slotEl.innerHTML=`<div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div>`;
@@ -1707,7 +1707,7 @@ function renderWeekPlan() {
       if(r) {
         slotEl.innerHTML=`<div class="meal-slot-name">${r.name}</div><div class="meal-slot-sub">${r.protein}g protein · ${r.cal} cal <button class="meal-slot-clear" onclick="event.stopPropagation();clearPlanMeal('${cat}')">✕</button></div>`;
         icoEl.textContent=r.emoji;
-        slotEl.parentElement.onclick=(e)=>{ if(!e.target.classList.contains('meal-slot-clear')) openPlanSheet(cat); };
+        slotEl.parentElement.onclick=(e)=>{ if(e.target.classList.contains('meal-slot-clear')) return; openRecipe(r.id); };
       }
     } else {
       slotEl.innerHTML=`<div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div>`;
@@ -1728,7 +1728,8 @@ function renderWeekPlan() {
       </div>`;
   }
 }
-function clearPlanMeal(cat) { const plan=getPlan(); delete plan[cat]; savePlan(plan); renderWeekPlan(); renderShopList(); }
+function clearPlanMeal(cat) { const plan=getPlan(); delete plan[cat]; savePlan(plan); renderWeekPlan(); renderShopList(); renderTodayMacroBar(); }
+function clearAllMeals() { savePlan({date:td()}); renderWeekPlan(); renderShopList(); renderTodayMacroBar(); }
 
 // ═══════════════════════════════════════════════
 //  SHOPPING LIST
