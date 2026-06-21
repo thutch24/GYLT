@@ -492,27 +492,27 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
       <h2>📋 Today's meals</h2>
       <button onclick="clearAllMeals()" style="background:none;border:none;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;padding:2px 0">Clear all</button>
     </div>
-    <div class="meal-slot" onclick="openPlanSheet('breakfast')">
+    <div class="meal-slot" onclick="handleMealSlotClick('breakfast', event)">
       <span class="meal-slot-label" style="color:var(--yel)">Breakfast</span>
       <div class="meal-slot-content" id="slot-breakfast"><div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div></div>
       <span class="meal-slot-ico" id="slot-breakfast-ico">➕</span>
     </div>
-    <div class="meal-slot" onclick="openPlanSheet('lunch')">
+    <div class="meal-slot" onclick="handleMealSlotClick('lunch', event)">
       <span class="meal-slot-label" style="color:var(--green)">Lunch</span>
       <div class="meal-slot-content" id="slot-lunch"><div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div></div>
       <span class="meal-slot-ico" id="slot-lunch-ico">➕</span>
     </div>
-    <div class="meal-slot" onclick="openPlanSheet('dinner')">
+    <div class="meal-slot" onclick="handleMealSlotClick('dinner', event)">
       <span class="meal-slot-label" style="color:var(--pink)">Dinner</span>
       <div class="meal-slot-content" id="slot-dinner"><div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div></div>
       <span class="meal-slot-ico" id="slot-dinner-ico">➕</span>
     </div>
-    <div class="meal-slot" id="slot-snack-1-row" onclick="openPlanSheet('snack1')">
+    <div class="meal-slot" id="slot-snack-1-row" onclick="handleMealSlotClick('snack1', event)">
       <span class="meal-slot-label" style="color:#a855f7">Snack 1</span>
       <div class="meal-slot-content" id="slot-snack1"><div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div></div>
       <span class="meal-slot-ico" id="slot-snack1-ico">➕</span>
     </div>
-    <div class="meal-slot" id="slot-snack-2-row" onclick="openPlanSheet('snack2')">
+    <div class="meal-slot" id="slot-snack-2-row" onclick="handleMealSlotClick('snack2', event)">
       <span class="meal-slot-label" style="color:#a855f7">Snack 2</span>
       <div class="meal-slot-content" id="slot-snack2"><div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div></div>
       <span class="meal-slot-ico" id="slot-snack2-ico">➕</span>
@@ -1386,16 +1386,14 @@ const RECIPES=[
    ],
    method:['Mix protein, peanut butter, oats, honey and milk choc chips in a bowl.','Add milk a tablespoon at a time until mixture comes together like dough.','Roll into 8 balls. Place on a tray lined with baking paper.','Refrigerate 30 min to firm up. Keep in an airtight container in the fridge for up to 5 days.'],
    tip:'Meal prep a batch Sunday night. Milk choc chips only — way better than dark. Press an extra choc chip on top before chilling.',also:[17,20]},
-  {id:22,cat:'snack',emoji:'🥛',viral:false,mealprep:false,
-   name:'Tim Tam Protein Shake',source:'The ultimate lazy treat',time:'2 min',servings:1,
-   cal:295,protein:27,carbs:26,fat:8,
+  {id:22,cat:'snack',emoji:'🍫',viral:false,mealprep:false,
+   name:'Tim Tams (2 biscuits)',source:'Classic · Woolies or Coles biscuit aisle',time:'0 min',servings:1,
+   cal:186,protein:2,carbs:24,fat:9,
    ingredients:[
-     {qty:'1 scoop (30g)',item:'Chocolate whey protein powder',brand:'Optimum Nutrition Gold Standard Double Chocolate'},
-     {qty:'250ml',item:'Reduced fat milk',brand:'Pauls or Woolies Full Cream (your call)'},
-     {qty:'2 biscuits',item:'Tim Tams (Original)',brand:'Arnotts Original Tim Tams'},
+     {qty:'2 biscuits',item:'Tim Tams (Original)',brand:'Arnotts Original — the OG, no substitutes'},
    ],
-   method:['Shake protein with milk in a shaker bottle until smooth.','Pour into a glass.','Eat the 2 Tim Tams alongside the shake — do not crush them in, that is a crime.'],
-   tip:'This is your IIFYM moment. Two Tim Tams + a protein shake fits your macros and tastes like dessert. You deserve it.',also:[17,21]},
+   method:['Open packet. Eat 2. Close packet.','The end.'],
+   tip:'186 cal for 2 Tim Tams. IIFYM — if it fits your macros, it fits. Just stop at 2.',also:[30,21]},
   {id:23,cat:'snack',emoji:'🍮',viral:false,mealprep:true,
    name:'Protein Mug Cake',source:'2-minute microwave magic',time:'5 min',servings:1,
    cal:225,protein:28,carbs:16,fat:5,
@@ -1618,6 +1616,16 @@ function macroBar(used, target, unit, color) {
   return `<div style="flex:1;min-width:80px"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">${used}${unit} <span style="opacity:.6">/ ${target}${unit}</span></div><div style="height:5px;border-radius:3px;background:var(--surface2);overflow:hidden"><div style="height:100%;width:${pct}%;background:${over?'#ef4444':color};border-radius:3px;transition:width .3s"></div></div></div>`;
 }
 
+function handleMealSlotClick(cat, event) {
+  if (event && event.target.classList.contains('meal-slot-clear')) return;
+  const plan = getPlan();
+  const id = plan[cat];
+  if (id) {
+    const r = RECIPES.find(x => x.id === id);
+    if (r) { openRecipe(r.id); return; }
+  }
+  openPlanSheet(cat);
+}
 function openPlanSheet(cat) {
   planPickingCat=cat;
   const labels={breakfast:'🌅 Pick your breakfast',lunch:'☀️ Pick your lunch',dinner:'🌙 Pick your dinner',snack1:'🍎 Pick snack 1',snack2:'🍫 Pick snack 2'};
@@ -1689,12 +1697,10 @@ function renderWeekPlan() {
       if(r) {
         slotEl.innerHTML=`<div class="meal-slot-name">${r.name}</div><div class="meal-slot-sub">${r.protein}g protein · ${r.cal} cal <button class="meal-slot-clear" onclick="event.stopPropagation();clearPlanMeal('${cat}')">✕</button></div>`;
         icoEl.textContent=r.emoji;
-        slotEl.parentElement.onclick=(e)=>{ if(e.target.classList.contains('meal-slot-clear')) return; openRecipe(r.id); };
       }
     } else {
       slotEl.innerHTML=`<div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div>`;
       icoEl.textContent='➕';
-      slotEl.parentElement.onclick=()=>openPlanSheet(cat);
     }
   });
   // Snacks
@@ -1707,12 +1713,10 @@ function renderWeekPlan() {
       if(r) {
         slotEl.innerHTML=`<div class="meal-slot-name">${r.name}</div><div class="meal-slot-sub">${r.protein}g protein · ${r.cal} cal <button class="meal-slot-clear" onclick="event.stopPropagation();clearPlanMeal('${cat}')">✕</button></div>`;
         icoEl.textContent=r.emoji;
-        slotEl.parentElement.onclick=(e)=>{ if(e.target.classList.contains('meal-slot-clear')) return; openRecipe(r.id); };
       }
     } else {
       slotEl.innerHTML=`<div class="meal-slot-name" style="color:var(--muted)">Tap to pick</div>`;
       icoEl.textContent='➕';
-      slotEl.parentElement.onclick=()=>openPlanSheet(cat);
     }
   });
   // Daily macro totals
