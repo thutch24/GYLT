@@ -326,7 +326,7 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
     <!-- FITSTOP -->
     <div class="section">
       <div class="sec-head">
-        <div class="sec-title"><div class="sec-dot" style="background:var(--pink)"></div>Fitstop</div>
+        <div class="sec-title">🦾 Fitstop</div>
         <div class="sec-prog" id="fit-prog"></div>
       </div>
       <div class="card card-pad">
@@ -426,13 +426,6 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
       <span class="meal-slot-ico" id="slot-dinner-ico">➕</span>
     </div>
   </div>
-  <div class="shop-list-card" id="week-shop-list">
-    <div class="shop-list-head">
-      <h2>🛒 This week's shopping</h2>
-      <button class="shop-copy-btn" id="shop-copy-btn" onclick="copyShopList()">Copy list</button>
-    </div>
-    <div id="week-shop-items"></div>
-  </div>
   <div class="cal-banner">
     <div style="font-size:18px">📊</div>
     <div class="cal-banner-text"><strong>~1800 cal/day</strong> · 55g+ fat · 130g+ protein · Snack daily</div>
@@ -456,9 +449,31 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
 <!-- ░░ SHOP PAGE ░░ -->
 <div id="shop-page" class="page">
   <div style="padding:0 20px;">
-    <h1 style="font-size:24px;font-weight:800;padding-top:calc(var(--safe-top)+8px)">Shop Smart 🛒</h1>
-    <p class="shop-intro">Buy these <strong>8 hero ingredients</strong> and you can make almost everything in this book. Less waste, less money, more meals.</p>
+    <h1 style="font-size:24px;font-weight:800;padding-top:calc(var(--safe-top)+8px)">🛒 This Week's Shop</h1>
+    <div class="shop-list-card visible" id="week-shop-list">
+      <div class="shop-list-head">
+        <h2>🗓 Based on your meal plan</h2>
+        <button class="shop-copy-btn" id="shop-copy-btn" onclick="copyShopList()">Copy list</button>
+      </div>
+      <div id="week-shop-items"><p style="padding:16px;color:var(--muted);font-size:14px">No meals planned yet — go to Recipes and add to your plan.</p></div>
+    </div>
+    <h2 style="font-size:16px;font-weight:800;margin:20px 0 8px">🏆 Hero Ingredients</h2>
+    <p class="shop-intro">Buy these <strong>8 ingredients</strong> and you can make almost everything in the recipe book.</p>
     <div id="shop-list"></div>
+  </div>
+</div>
+
+
+<!-- ░░ QUICK ADD TO PLAN SHEET ░░ -->
+<div id="quick-add-sheet">
+  <div id="quick-add-bg" onclick="closeQuickAdd()"></div>
+  <div id="quick-add-box">
+    <div id="quick-add-title">Add to meal plan</div>
+    <div id="quick-add-sub">Which meal is this for?</div>
+    <button class="qa-btn qa-btn-b" onclick="confirmQuickAdd('breakfast')">🌅 Breakfast</button>
+    <button class="qa-btn qa-btn-l" onclick="confirmQuickAdd('lunch')">☀️ Lunch</button>
+    <button class="qa-btn qa-btn-d" onclick="confirmQuickAdd('dinner')">🌙 Dinner</button>
+    <button class="qa-cancel" onclick="closeQuickAdd()">Cancel</button>
   </div>
 </div>
 
@@ -534,7 +549,7 @@ function navToTab(tab) {
   document.getElementById(tab+'-page').classList.add('active');
   const tabEl = document.querySelector('[data-tab="'+tab+'"]');
   if (tabEl) tabEl.classList.add('active');
-  if (tab==='shop') renderShop();
+  if (tab==='shop') { renderShop(); renderShopList(); }
   if (tab==='recipes') renderGrid();
   window.scrollTo(0,0);
 }
@@ -680,7 +695,7 @@ function tapFitstop(date) {
   if(S.fitstop[date]) {
     const count=getFitCount();
     if(count===3) celebrate('🌟🌟🌟','Three sessions this week!','You absolute powerhouse. All stars earned!');
-    else celebrate('💪','Fitstop logged!',count===2?'One more to go 🔥':'Two more to go — you\'ve got this!');
+    else { const left=3-count; celebrate('💪','Fitstop logged!',left===1?'One more to go 🔥':left<=0?'All sessions done! 🌟':'Two more to go — you\'ve got this!'); }
   }
 }
 function getFitCount() { return weekDays().filter(d=>S.fitstop[d]).length; }
@@ -766,7 +781,29 @@ const ROTATE_BY_DAY=[
   {ico:'🧺',name:'Fold & put away laundry',sub:'End of week laundry clear-out'},
   {ico:'🫧',name:'Clean bathrooms',sub:'Weekend reset — bathroom blitz'},
 ];
-function getTodayRotateTask() { return ROTATE_BY_DAY[new Date().getDay()]; }
+function isRecyclingWeek() {
+  // June 23 2026 = recycling week, fortnightly after that
+  const ref = new Date('2026-06-23');
+  const today = new Date();
+  const day = today.getDay();
+  const daysToMon = (day === 0 ? 6 : day - 1);
+  const mon = new Date(today); mon.setDate(today.getDate() - daysToMon);
+  const wed = new Date(mon); wed.setDate(mon.getDate() + 2);
+  const diffDays = Math.round((wed - ref) / 86400000);
+  return (Math.round(diffDays / 7) % 2 === 0);
+}
+function getTodayRotateTask() {
+  const day = new Date().getDay();
+  if (day === 3) {
+    const recycling = isRecyclingWeek();
+    return {
+      ico: '🗑️',
+      name: 'Bins out tonight',
+      sub: recycling ? 'General bin + ♻️ Recycling bin both go out' : 'General bin only this week'
+    };
+  }
+  return ROTATE_BY_DAY[day];
+}
 function todayHome() {
   const t=td();
   if(!S.homeChecks[t]) { S.homeChecks[t]={}; DAILY_AREAS.forEach(a=>S.homeChecks[t][a.id]=false); S.homeChecks[t].rotate=false; }
@@ -812,10 +849,10 @@ function renderTodos() {
 // ═══════════════════════════════════════════════
 //  CONTENT
 // ═══════════════════════════════════════════════
-function markContent() { S.content[weekKey()]=true; save(); renderContent(); celebrate('🎬✨','You made something!','That took guts. So proud of you.'); }
+function markContent() { const wk=weekKey(); S.content[wk]=!S.content[wk]; save(); renderContent(); if(S.content[wk]) celebrate('🎬✨','You made something!','That took guts. So proud of you.'); }
 function renderContent() {
   const done=S.content[weekKey()];
-  document.getElementById('content-area').innerHTML=done?`<div class="content-done">🎉 You created content this week!</div>`:`<button class="content-btn" onclick="markContent()">I made something! 🎬</button>`;
+  document.getElementById('content-area').innerHTML=done?`<div class="content-done" onclick="markContent()" style="cursor:pointer">🎉 You created content this week! <span style="font-size:11px;color:var(--muted);display:block;margin-top:2px">Tap to undo</span></div>`:`<button class="content-btn" onclick="markContent()">I made something! 🎬</button>`;
 }
 
 // ═══════════════════════════════════════════════
@@ -1230,6 +1267,29 @@ function savePlan(p) { p.week=weekKey(); localStorage.setItem('recipe_plan',JSON
 
 let planPickingCat=null;
 
+
+// ═══════════════════════════════════════════════
+//  QUICK ADD TO PLAN
+// ═══════════════════════════════════════════════
+let _qaId = null;
+function quickAddToPlan(id) {
+  _qaId = id;
+  const r = RECIPES.find(x=>x.id===id);
+  if (r) document.getElementById('quick-add-sub').textContent = r.emoji+' '+r.name;
+  document.getElementById('quick-add-sheet').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function confirmQuickAdd(cat) {
+  if (!_qaId) return;
+  const plan=getPlan(); plan[cat]=_qaId; savePlan(plan);
+  renderWeekPlan(); renderShopList();
+  closeQuickAdd();
+}
+function closeQuickAdd() {
+  document.getElementById('quick-add-sheet').classList.remove('open');
+  document.body.style.overflow=''; _qaId=null;
+}
+
 // ═══════════════════════════════════════════════
 //  PLAN SHEET
 // ═══════════════════════════════════════════════
@@ -1278,8 +1338,7 @@ function renderShopList() {
   const selectedIds=['breakfast','lunch','dinner'].map(c=>plan[c]).filter(Boolean);
   const card=document.getElementById('week-shop-list');
   const itemsEl=document.getElementById('week-shop-items');
-  if(selectedIds.length===0) { card.classList.remove('visible'); return; }
-  card.classList.add('visible');
+  if(selectedIds.length===0) { itemsEl.innerHTML='<p style="padding:16px;color:var(--muted);font-size:14px">No meals planned yet — go to Recipes and tap + Add to plan on a recipe.</p>'; return; }
   const CAT_LABELS_PLAN={breakfast:'🌅 Breakfast',lunch:'☀️ Lunch',dinner:'🌙 Dinner'};
   let html='', plainText="🛒 This week's shopping list\n\n";
   ['breakfast','lunch','dinner'].forEach(cat=>{
@@ -1344,7 +1403,7 @@ function renderGrid() {
   }
   document.getElementById('recipe-grid').innerHTML=recipes.map(r=>{
     const cc=CAT_COLORS[r.cat]; const fav=favIds.includes(r.id);
-    return `<div class="rcard" onclick="openRecipe(${r.id})"><div class="rcard-top" style="background:linear-gradient(180deg,${cc}18,transparent)"><button class="heart-btn" onclick="event.stopPropagation();tapCardHeart(${r.id},this)">${fav?'❤️':'🤍'}</button>${r.viral?`<div class="viral-badge">🔥 VIRAL</div>`:r.mealprep?`<div class="prep-badge">🍱 MEAL PREP</div>`:''}<div style="font-size:44px">${r.emoji}</div></div><div class="rcard-body"><div class="rcard-name">${r.name}</div><div class="rcard-cat" style="color:${cc}">${CAT_LABELS[r.cat]}</div><div class="rcard-macros"><div class="mac" style="background:${cc}18"><div class="mac-n" style="color:${cc}">${r.cal}</div><div class="mac-l">cal</div></div><div class="mac" style="background:rgba(82,201,135,.1)"><div class="mac-n" style="color:var(--green)">${r.protein}g</div><div class="mac-l">protein</div></div></div><div class="rcard-time">⏱ ${r.time}</div></div></div>`;
+    return `<div class="rcard" onclick="openRecipe(${r.id})"><div class="rcard-top" style="background:linear-gradient(180deg,${cc}18,transparent)"><button class="heart-btn" onclick="event.stopPropagation();tapCardHeart(${r.id},this)">${fav?'❤️':'🤍'}</button>${r.viral?`<div class="viral-badge">🔥 VIRAL</div>`:r.mealprep?`<div class="prep-badge">🍱 MEAL PREP</div>`:''}<div style="font-size:44px">${r.emoji}</div></div><div class="rcard-body"><div class="rcard-name">${r.name}</div><div class="rcard-cat" style="color:${cc}">${CAT_LABELS[r.cat]}</div><div class="rcard-macros"><div class="mac" style="background:${cc}18"><div class="mac-n" style="color:${cc}">${r.cal}</div><div class="mac-l">cal</div></div><div class="mac" style="background:rgba(82,201,135,.1)"><div class="mac-n" style="color:var(--green)">${r.protein}g</div><div class="mac-l">protein</div></div></div><div class="rcard-time">⏱ ${r.time}</div><button class="rcard-add-btn" onclick="event.stopPropagation();quickAddToPlan(${r.id})">+ Add to plan</button></div></div>`;
   }).join('');
 }
 function renderFilters() {
