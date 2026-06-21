@@ -38,6 +38,43 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
 .quote-text { font-size:14px; font-style:italic; line-height:1.65; color:#7c4a6e; font-weight:500; position:relative; z-index:1; }
 .quote-hint { font-size:11px; color:var(--muted); margin-top:7px; }
 .week-strip { display:flex; gap:5px; margin-bottom:24px; }
+/* HISTORY / CALENDAR */
+.hist-btn { position:absolute; right:0; top:2px; background:none; border:none; font-size:20px; cursor:pointer; padding:4px 6px; border-radius:10px; }
+.hist-btn:active { background:var(--pink-dim); }
+#history-sheet .sheet-inner { max-height:88dvh; overflow-y:auto; padding-bottom:20px; }
+.streak-banner { background:linear-gradient(135deg,#fff0f9,#fff9e8); border:1.5px solid rgba(244,114,182,.2); border-radius:18px; padding:16px 20px; margin-bottom:20px; display:flex; align-items:center; gap:16px; }
+.streak-flame { font-size:36px; line-height:1; }
+.streak-num { font-size:36px; font-weight:900; color:var(--pink); line-height:1; }
+.streak-lbl { font-size:14px; font-weight:800; color:var(--text); }
+.streak-sub { font-size:11px; color:var(--muted); margin-top:3px; }
+.cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.cal-nav-btn { background:var(--surface); border:1.5px solid var(--border); border-radius:10px; width:34px; height:34px; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.cal-month-lbl { font-size:15px; font-weight:800; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.cal-day-hdr { text-align:center; font-size:9px; font-weight:800; color:var(--muted); padding:4px 0; letter-spacing:.3px; }
+.cal-cell { border-radius:10px; aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; transition:all .15s; min-width:0; }
+.cal-cell.clickable { cursor:pointer; }
+.cal-cell.clickable:active { transform:scale(.93); }
+.cal-cell.today-cell { outline:2px solid var(--pink); outline-offset:-1px; }
+.cal-cell.future-cell { opacity:.25; pointer-events:none; }
+.cal-cell.all-done { background:var(--green-bg); }
+.cal-cell.some-done { background:var(--yel-bg); }
+.cal-cell.none-done { background:var(--surface2); }
+.cal-cell.no-data { background:transparent; }
+.cal-cell .cal-num { font-size:11px; font-weight:700; color:var(--text); }
+.cal-cell .cal-pip { font-size:8px; line-height:1; min-height:9px; }
+/* Day detail */
+#day-detail-sheet .sheet-inner { max-height:86dvh; overflow-y:auto; padding-bottom:24px; }
+.det-date-lbl { font-size:12px; font-weight:800; color:var(--muted); letter-spacing:.6px; text-transform:uppercase; margin-bottom:18px; }
+.det-group { margin-bottom:18px; }
+.det-group-title { font-size:11px; font-weight:800; color:var(--muted); letter-spacing:.5px; text-transform:uppercase; margin-bottom:8px; }
+.det-row { display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--surface); border-radius:14px; border:1.5px solid var(--border); margin-bottom:6px; cursor:pointer; transition:all .15s; }
+.det-row.done { background:var(--green-bg); border-color:rgba(82,201,135,.3); }
+.det-check { width:22px; height:22px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; transition:all .15s; }
+.det-row.done .det-check { background:var(--green); border-color:var(--green); color:white; }
+.det-lbl { font-size:14px; font-weight:600; flex:1; }
+.det-row.done .det-lbl { color:var(--muted); text-decoration:line-through; }
+
 .wd { flex:1; text-align:center; background:var(--surface); border-radius:14px; padding:9px 3px; border:1.5px solid var(--border); box-shadow:var(--shadow-sm); }
 .wd.today { border-color:var(--pink); background:var(--pink-bg); }
 .wd-lbl { font-size:10px; font-weight:800; color:var(--muted); letter-spacing:.4px; }
@@ -184,6 +221,22 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
 .shop-meal-label { padding:8px 16px 4px; font-size:10px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); background:var(--surface2); }
 #plan-sheet { position:fixed; inset:0; z-index:500; display:none; }
 #plan-sheet.open { display:flex; flex-direction:column; justify-content:flex-end; }
+#quick-add-sheet { position:fixed; inset:0; z-index:600; display:none; align-items:flex-end; }
+#quick-add-sheet.open { display:flex; }
+#quick-add-bg { position:absolute; inset:0; background:rgba(0,0,0,.35); }
+#quick-add-box { position:relative; background:var(--bg); border-radius:24px 24px 0 0; width:100%; padding:24px 20px calc(var(--safe-bot,0px)+20px); animation:slideUp .25s ease; }
+#quick-add-title { font-size:17px; font-weight:800; margin-bottom:4px; }
+#quick-add-sub { font-size:14px; color:var(--muted); margin-bottom:20px; }
+.qa-btn { width:100%; padding:14px; border-radius:16px; border:none; font-size:15px; font-weight:700; cursor:pointer; margin-bottom:10px; }
+.qa-btn-b { background:#fff9e8; color:#b45309; }
+.qa-btn-l { background:#f0fdf4; color:#15803d; }
+.qa-btn-d { background:#f0f9ff; color:#0369a1; }
+.qa-cancel { width:100%; padding:12px; border-radius:16px; border:none; background:var(--surface2); font-size:14px; font-weight:600; color:var(--muted); cursor:pointer; }
+.cal-budget-bar { background:var(--surface2); border-radius:12px; padding:10px 14px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; }
+.cal-budget-used { font-size:15px; font-weight:800; }
+.cal-budget-left { font-size:12px; color:var(--muted); }
+.plan-pick-item.over-budget { opacity:.35; pointer-events:none; }
+.plan-pick-item.over-budget::after { content:' — over budget'; font-size:11px; color:#ef4444; }
 .plan-sheet-bg { position:absolute; inset:0; background:rgba(0,0,0,.35); }
 .plan-sheet-card { position:relative; background:var(--bg); border-radius:24px 24px 0 0; padding:0 0 calc(var(--safe-bot)+16px); max-height:80dvh; overflow-y:auto; animation:slideUp .28s cubic-bezier(.22,.61,.36,1) both; }
 @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
@@ -310,8 +363,11 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
 <!-- ░░ TODAY PAGE ░░ -->
 <div id="today-page" class="page active">
   <div id="today-inner">
+    <div style="position:relative">
     <div class="hdate" id="hdate"></div>
     <div class="htitle" id="htitle">Hey Tessa 🌸</div>
+    <button class="hist-btn" onclick="openHistory()" title="History">📅</button>
+    </div>
 
     <div class="quote" onclick="nextQuote()">
       <div class="quote-text" id="qtext"></div>
@@ -474,6 +530,31 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
     <button class="qa-btn qa-btn-l" onclick="confirmQuickAdd('lunch')">☀️ Lunch</button>
     <button class="qa-btn qa-btn-d" onclick="confirmQuickAdd('dinner')">🌙 Dinner</button>
     <button class="qa-cancel" onclick="closeQuickAdd()">Cancel</button>
+  </div>
+</div>
+
+
+<!-- ░░ HISTORY SHEET ░░ -->
+<div class="sheet-overlay" id="history-sheet" onclick="sheetBgClose(event,'history-sheet')">
+  <div class="sheet-inner">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">History</div>
+    <div id="streak-area"></div>
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+      <div class="cal-month-lbl" id="cal-month-lbl"></div>
+      <button class="cal-nav-btn" onclick="calNext()">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+</div>
+
+<!-- ░░ DAY DETAIL SHEET ░░ -->
+<div class="sheet-overlay" id="day-detail-sheet" onclick="sheetBgClose(event,'day-detail-sheet')">
+  <div class="sheet-inner">
+    <div class="sheet-handle"></div>
+    <div class="det-date-lbl" id="det-date-lbl"></div>
+    <div id="det-body"></div>
   </div>
 </div>
 
@@ -1389,6 +1470,16 @@ function quickAddToPlan(id) {
 }
 function confirmQuickAdd(cat) {
   if (!_qaId) return;
+  const r = RECIPES.find(x => x.id === _qaId);
+  if (r) {
+    const m = getPlannedMacros(cat);
+    const warnings = [];
+    if (m.cal + (r.cal||0) > TARGETS.cal + BUFFERS.cal) warnings.push((m.cal+(r.cal||0)-TARGETS.cal)+' cal over');
+    if (m.fat + (r.fat||0) > TARGETS.fat + BUFFERS.fat) warnings.push(((m.fat+(r.fat||0)-TARGETS.fat).toFixed(0))+'g fat over');
+    if (warnings.length && !confirm(r.name + ' would put you ' + warnings.join(' and ') + ' for the day. Add anyway?')) {
+      closeQuickAdd(); return;
+    }
+  }
   const plan=getPlan(); plan[cat]=_qaId; savePlan(plan);
   renderWeekPlan(); renderShopList();
   closeQuickAdd();
@@ -1401,12 +1492,67 @@ function closeQuickAdd() {
 // ═══════════════════════════════════════════════
 //  PLAN SHEET
 // ═══════════════════════════════════════════════
+// ── Macro targets (with buffers) ──────────────────
+const TARGETS = { cal: 1600, protein: 120, fat: 55 };
+const BUFFERS = { cal: 150, protein: 15, fat: 10 };
+
+function getPlannedMacros(excludeCat) {
+  const plan = getPlan();
+  let cal=0, protein=0, fat=0;
+  ['breakfast','lunch','dinner'].forEach(c => {
+    if (c !== excludeCat && plan[c]) {
+      const r = RECIPES.find(x => x.id === plan[c]);
+      if (r) { cal += r.cal||0; protein += r.protein||0; fat += r.fat||0; }
+    }
+  });
+  return { cal, protein, fat };
+}
+// Legacy helper kept for confirmQuickAdd
+function getPlannedCals(excludeCat) { return getPlannedMacros(excludeCat).cal; }
+
+function macroBar(used, target, unit, color) {
+  const pct = Math.min(100, Math.round(used/target*100));
+  const over = used > target + BUFFERS[unit==='cal'?'cal':unit==='g p'?'protein':'fat'];
+  return `<div style="flex:1;min-width:80px"><div style="font-size:11px;color:var(--muted);margin-bottom:3px">${used}${unit} <span style="opacity:.6">/ ${target}${unit}</span></div><div style="height:5px;border-radius:3px;background:var(--surface2);overflow:hidden"><div style="height:100%;width:${pct}%;background:${over?'#ef4444':color};border-radius:3px;transition:width .3s"></div></div></div>`;
+}
+
 function openPlanSheet(cat) {
   planPickingCat=cat;
   const labels={breakfast:'🌅 Pick your breakfast',lunch:'☀️ Pick your lunch',dinner:'🌙 Pick your dinner'};
   document.getElementById('plan-sheet-title').textContent=labels[cat];
-  const recipes=RECIPES.filter(r=>r.cat===cat);
-  document.getElementById('plan-sheet-list').innerHTML=recipes.map(r=>`<div class="plan-pick-item" onclick="selectPlanMeal(${r.id})"><span class="plan-pick-emoji">${r.emoji}</span><div style="flex:1"><div class="plan-pick-name">${r.name}</div><div class="plan-pick-meta">⏱ ${r.time} · 🥩 ${r.protein}g protein · ${r.cal} cal</div></div></div>`).join('');
+  const m = getPlannedMacros(cat);
+  const calLeft = TARGETS.cal + BUFFERS.cal - m.cal;
+  const fatLeft = TARGETS.fat + BUFFERS.fat - m.fat;
+  const proteinNeeded = Math.max(0, TARGETS.protein - BUFFERS.protein - m.protein);
+  const recipes = RECIPES.filter(r=>r.cat===cat);
+
+  const budgetHtml = `<div class="cal-budget-bar" style="flex-direction:column;gap:8px;align-items:stretch">
+    <div style="font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.4px">TODAY'S MACROS</div>
+    <div style="display:flex;gap:10px">
+      ${macroBar(m.cal, TARGETS.cal, 'cal', 'var(--pink)')}
+      ${macroBar(m.protein, TARGETS.protein, 'g p', 'var(--green)')}
+      ${macroBar(m.fat, TARGETS.fat, 'g f', '#f59e0b')}
+    </div>
+    <div style="font-size:11px;color:var(--muted)">${calLeft} cal · ${fatLeft}g fat remaining · need ${proteinNeeded}g more protein</div>
+  </div>`;
+
+  document.getElementById('plan-sheet-list').innerHTML = budgetHtml + recipes.map(r=>{
+    const projCal = m.cal + (r.cal||0);
+    const projFat = m.fat + (r.fat||0);
+    const overCal = projCal > TARGETS.cal + BUFFERS.cal;
+    const overFat = projFat > TARGETS.fat + BUFFERS.fat;
+    const isOver = overCal || overFat;
+    const warnings = [];
+    if (overCal) warnings.push((projCal - TARGETS.cal) + ' cal over');
+    if (overFat) warnings.push((projFat - TARGETS.fat).toFixed(0) + 'g fat over');
+    return `<div class="plan-pick-item${isOver?' over-budget':''}" onclick="selectPlanMeal(${r.id})">
+      <span class="plan-pick-emoji">${r.emoji}</span>
+      <div style="flex:1">
+        <div class="plan-pick-name">${r.name}</div>
+        <div class="plan-pick-meta">🥩 ${r.protein}g · 🧈 ${r.fat}g fat · ${r.cal} cal${warnings.length?' · <span style=\'color:#ef4444\'>' + warnings.join(', ') + '</span>':''}</div>
+      </div>
+    </div>`;
+  }).join('');
   document.getElementById('plan-sheet').classList.add('open');
   document.body.style.overflow='hidden';
 }
@@ -1558,6 +1704,214 @@ function renderShop() {
     const usedIn=h.uses.map(id=>RECIPES.find(r=>r.id===id)).filter(Boolean);
     return `<div class="ing-group"><div class="ing-group-head"><div class="ing-group-ico">${h.ico}</div><div style="flex:1"><div class="ing-group-name">${h.name}</div><div class="ing-group-sub">${h.sub}</div></div><div class="ing-group-tag" style="background:${h.tagColor}18;color:${h.tagColor}">${h.tag}</div></div><div style="padding:12px 16px 4px;font-size:12px;color:var(--muted);line-height:1.5">${h.tip}</div><div class="ing-uses">${usedIn.map(r=>`<div class="use-chip" style="background:${CAT_COLORS[r.cat]}15;color:${CAT_COLORS[r.cat]}" onclick="openRecipe(${r.id})">${r.emoji} ${r.name}</div>`).join('')}</div></div>`;
   }).join('');
+}
+
+
+// ═══════════════════════════════════════════════
+//  HISTORY + CALENDAR
+// ═══════════════════════════════════════════════
+let calYear, calMonth;
+
+function openHistory() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  renderStreak();
+  renderCal();
+  openSheet('history-sheet');
+}
+
+function calPrev() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCal();
+}
+function calNext() {
+  const now = new Date();
+  if (calYear > now.getFullYear() || (calYear === now.getFullYear() && calMonth >= now.getMonth())) return;
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCal();
+}
+
+function getDayScore(dateStr) {
+  // Returns: 'all' | 'some' | 'none' | null (no data/future)
+  const today = td();
+  if (dateStr > today) return null;
+  const meds = !!(S.meds && S.meds[dateStr]);
+  const flow = S.morningFlow && S.morningFlow[dateStr] ? S.morningFlow[dateStr] : [];
+  const flowDone = flow.length > 0 && flow.every(Boolean);
+  const meals = S.meals && S.meals[dateStr] ? Object.values(S.meals[dateStr]).filter(Boolean).length : 0;
+  const fitstop = !!(S.fitstop && S.fitstop[dateStr]);
+  const checks = [meds, flowDone, meals > 0];
+  // Only count fitstop on weekdays
+  const d = new Date(dateStr + 'T12:00:00');
+  if (d.getDay() >= 1 && d.getDay() <= 5) checks.push(fitstop);
+  const doneCount = checks.filter(Boolean).length;
+  if (doneCount === 0) return 'none';
+  if (doneCount === checks.length) return 'all';
+  return 'some';
+}
+
+function calcStreak() {
+  let streak = 0;
+  const today = td();
+  let d = new Date(today + 'T12:00:00');
+  // Don't penalise today if it's not over yet
+  d.setDate(d.getDate() - 1);
+  while (true) {
+    const dateStr = d.toISOString().slice(0,10);
+    const score = getDayScore(dateStr);
+    if (score === 'all' || score === 'some') {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+    if (streak > 365) break;
+  }
+  return streak;
+}
+
+function renderStreak() {
+  const streak = calcStreak();
+  const el = document.getElementById('streak-area');
+  if (streak === 0) {
+    el.innerHTML = '<div class="streak-banner"><div class="streak-flame">✨</div><div><div class="streak-lbl">Start your streak today</div><div class="streak-sub">Log something every day to build momentum</div></div></div>';
+  } else {
+    el.innerHTML = `<div class="streak-banner"><div class="streak-flame">🔥</div><div class="streak-num">${streak}</div><div><div class="streak-lbl">day streak</div><div class="streak-sub">Keep it going 💜</div></div></div>`;
+  }
+}
+
+function renderCal() {
+  const now = new Date();
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-lbl').textContent = monthNames[calMonth] + ' ' + calYear;
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const today = td();
+  // Start week on Monday: shift Sunday(0) to 6, Mon(1)=0, etc
+  const startOffset = (firstDay === 0 ? 6 : firstDay - 1);
+
+  let html = ['M','T','W','T','F','S','S'].map(l => `<div class="cal-day-hdr">${l}</div>`).join('');
+
+  // Empty cells before first day
+  for (let i = 0; i < startOffset; i++) html += '<div></div>';
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const score = getDayScore(dateStr);
+    const isToday = dateStr === today;
+    const isFuture = dateStr > today;
+
+    let cls = 'cal-cell';
+    if (isFuture) cls += ' future-cell';
+    else if (isToday) cls += ' today-cell clickable';
+    else cls += ' clickable';
+
+    let pip = '';
+    if (!isFuture && score) {
+      if (score === 'all') { cls += ' all-done'; pip = '✓'; }
+      else if (score === 'some') { cls += ' some-done'; pip = '·'; }
+      else { cls += ' none-done'; pip = ''; }
+    } else if (!isFuture) {
+      cls += ' no-data';
+    }
+
+    const onclick = (!isFuture) ? `onclick="openDayDetail('${dateStr}')"` : '';
+    html += `<div class="${cls}" ${onclick}><div class="cal-num">${day}</div><div class="cal-pip">${pip}</div></div>`;
+  }
+
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+let detailDate = null;
+const MORNING_STEP_NAMES = ['☕ Coffee','💊 Meds','🛏 Make bed','🍳 Breakfast','🧹 Quick tidy','💪 Fitstop'];
+
+function openDayDetail(dateStr) {
+  detailDate = dateStr;
+  const d = new Date(dateStr + 'T12:00:00');
+  const label = d.toLocaleDateString('en-AU', {weekday:'long', day:'numeric', month:'long', year:'numeric'}).toUpperCase();
+  document.getElementById('det-date-lbl').textContent = label;
+  renderDayDetail();
+  openSheet('day-detail-sheet');
+}
+
+function renderDayDetail() {
+  const d = detailDate;
+  const meds = !!(S.meds && S.meds[d]);
+  const flow = (S.morningFlow && S.morningFlow[d]) ? S.morningFlow[d] : [];
+  const meals = (S.meals && S.meals[d]) ? S.meals[d] : {b:false,l:false,d:false};
+  const fitstop = !!(S.fitstop && S.fitstop[d]);
+  const dt = new Date(d + 'T12:00:00');
+  const isWkday = dt.getDay() >= 1 && dt.getDay() <= 5;
+
+  let html = '';
+
+  // Meds
+  html += `<div class="det-group"><div class="det-group-title">💊 Meds</div>
+    <div class="det-row ${meds?'done':''}" onclick="detToggleMeds()">
+      <div class="det-check">${meds?'✓':''}</div>
+      <div class="det-lbl">Took meds</div>
+    </div></div>`;
+
+  // Morning flow
+  if (flow.length > 0) {
+    html += '<div class="det-group"><div class="det-group-title">☀️ Morning flow</div>';
+    flow.forEach((done, i) => {
+      const name = MORNING_STEP_NAMES[i] || 'Step ' + (i+1);
+      html += `<div class="det-row ${done?'done':''}" onclick="detToggleFlow(${i})">
+        <div class="det-check">${done?'✓':''}</div>
+        <div class="det-lbl">${name}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // Meals
+  html += '<div class="det-group"><div class="det-group-title">🍳 Meals</div>';
+  [{id:'b',label:'Breakfast'},{id:'l',label:'Lunch'},{id:'d',label:'Dinner'}].forEach(m => {
+    const done = !!(meals[m.id]);
+    html += `<div class="det-row ${done?'done':''}" onclick="detToggleMeal('${m.id}')">
+      <div class="det-check">${done?'✓':''}</div>
+      <div class="det-lbl">${m.label}</div>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Fitstop (weekdays only)
+  if (isWkday) {
+    html += `<div class="det-group"><div class="det-group-title">🦾 Fitstop</div>
+      <div class="det-row ${fitstop?'done':''}" onclick="detToggleFitstop()">
+        <div class="det-check">${fitstop?'✓':''}</div>
+        <div class="det-lbl">Went to Fitstop</div>
+      </div></div>`;
+  }
+
+  document.getElementById('det-body').innerHTML = html;
+}
+
+function detToggleMeds() {
+  if (!S.meds) S.meds = {};
+  S.meds[detailDate] = !S.meds[detailDate];
+  save(); renderDayDetail(); renderCal(); renderMeds();
+}
+function detToggleFlow(i) {
+  if (!S.morningFlow[detailDate]) return;
+  S.morningFlow[detailDate][i] = !S.morningFlow[detailDate][i];
+  save(); renderDayDetail(); renderCal();
+}
+function detToggleMeal(id) {
+  if (!S.meals) S.meals = {};
+  if (!S.meals[detailDate]) S.meals[detailDate] = {b:false,l:false,d:false};
+  S.meals[detailDate][id] = !S.meals[detailDate][id];
+  save(); renderDayDetail(); renderCal(); renderMeals();
+}
+function detToggleFitstop() {
+  if (!S.fitstop) S.fitstop = {};
+  S.fitstop[detailDate] = !S.fitstop[detailDate];
+  save(); renderDayDetail(); renderCal(); renderFitstop();
 }
 
 // ═══════════════════════════════════════════════
