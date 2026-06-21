@@ -521,7 +521,7 @@ html,body { min-height:100%; background:var(--bg); color:var(--text); font-famil
   </div>
   <div class="cal-banner">
     <div style="font-size:18px">📊</div>
-    <div class="cal-banner-text"><strong>~1600 cal/day</strong> · 55g+ fat · 120g+ protein · Snack daily</div>
+    <div class="cal-banner-text"><strong>~1600 cal/day</strong> · 55g+ fat · 140g+ protein · Snack daily</div>
   </div>
   <div style="margin-top:20px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -1726,7 +1726,7 @@ function renderWeekPlan() {
         totalBar.innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         ${miniMacro(m.cal,1600,'cal','var(--pink)')}
-        ${miniMacro(m.protein,120,'g protein','var(--green)')}
+        ${miniMacro(m.protein,140,'g protein','var(--green)')}
         ${miniMacro(m.carbs,156,'g carbs','#3b82f6')}
         ${miniMacro(m.fat,55,'g fat','#f59e0b')}
       </div>`;
@@ -1865,7 +1865,7 @@ function renderShop() {
 // ═══════════════════════════════════════════════
 const PRESET_PLANS = [
   { breakfast:28, lunch:9,  dinner:13, snack1:17, snack2:23 }, // Choc & Cheese
-  { breakfast:4,  lunch:8,  dinner:14, snack1:17, snack2:null }, // Meal Prep Bowls
+  { breakfast:4,  lunch:8,  dinner:14, snack1:17, snack2:30 }, // Meal Prep Bowls
   { breakfast:2,  lunch:10, dinner:16, snack1:22, snack2:17 }, // Lazy Girl
 ];
 function loadPlan(idx) {
@@ -1876,7 +1876,6 @@ function loadPlan(idx) {
   if (p.dinner)    plan.dinner    = p.dinner;
   if (p.snack1)    plan.snack1    = p.snack1;
   if (p.snack2)    plan.snack2    = p.snack2;
-  else             delete plan.snack2;
   savePlan(plan);
   renderWeekPlan();
   renderShopList();
@@ -1937,7 +1936,7 @@ function renderTodayMacroBar() {
     <div style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.5px;margin-bottom:8px">TODAY'S MACROS</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
       ${miniMacro(m.cal,1600,'cal','var(--pink)')}
-      ${miniMacro(m.protein,120,'g protein','var(--green)')}
+      ${miniMacro(m.protein,140,'g protein','var(--green)')}
       ${miniMacro(m.carbs,156,'g carbs','#3b82f6')}
       ${miniMacro(m.fat,55,'g fat','#f59e0b')}
     </div>
